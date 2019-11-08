@@ -52,7 +52,7 @@ def myspsyl(m,p):
     except:
         z3=0
         print ("Try again the sound of the audio was not clear")
-    return; 
+    return None
 
 def mysppaus(m,p):
     sound=p+"/"+m+".wav"
@@ -69,7 +69,7 @@ def mysppaus(m,p):
     except:
         z3=0
         print ("Try again the sound of the audio was not clear")
-    return; 
+    return None
 
 def myspsr(m,p):
     sound=p+"/"+m+".wav"
@@ -86,7 +86,7 @@ def myspsr(m,p):
     except:
         z3=0
         print ("Try again the sound of the audio was not clear")
-    return;
+    return None
 
 def myspatc(m,p):
     sound=p+"/"+m+".wav"
@@ -103,7 +103,7 @@ def myspatc(m,p):
     except:
         z3=0
         print ("Try again the sound of the audio was not clear")
-    return;
+    return None
 
 def myspst(m,p):
     sound=p+"/"+m+".wav"
@@ -120,7 +120,7 @@ def myspst(m,p):
     except:
         z4=0
         print ("Try again the sound of the audio was not clear")
-    return;
+    return None
 
 def myspod(m,p):
     sound=p+"/"+m+".wav"
@@ -137,7 +137,7 @@ def myspod(m,p):
     except:
         z4=0
         print ("Try again the sound of the audio was not clear")
-    return;
+    return None
 
 def myspbala(m,p):
     sound=p+"/"+m+".wav"
@@ -154,7 +154,7 @@ def myspbala(m,p):
     except:
         z4=0
         print ("Try again the sound of the audio was not clear")
-    return;
+    return None
 
 def myspf0mean(m,p):
     sound=p+"/"+m+".wav"
@@ -171,7 +171,7 @@ def myspf0mean(m,p):
     except:
         z4=0
         print ("Try again the sound of the audio was not clear")
-    return;
+    return NOne
 
 def myspf0sd(m,p):
     sound=p+"/"+m+".wav"
@@ -188,7 +188,7 @@ def myspf0sd(m,p):
     except:
         z4=0
         print ("Try again the sound of the audio was not clear")
-    return;
+    return None
 
 def myspf0med(m,p):
     sound=p+"/"+m+".wav"
@@ -205,7 +205,7 @@ def myspf0med(m,p):
     except:
         z4=0
         print ("Try again the sound of the audio was not clear")
-    return;
+    return None
 
 def myspf0min(m,p):
     sound=p+"/"+m+".wav"
@@ -222,7 +222,7 @@ def myspf0min(m,p):
     except:
         z3=0
         print ("Try again the sound of the audio was not clear") 
-    return;
+    return None
 
 def myspf0max(m,p):
     sound=p+"/"+m+".wav"
@@ -239,7 +239,7 @@ def myspf0max(m,p):
     except:
         z3=0
         print ("Try again the sound of the audio was not clear")
-    return;
+    return None
 
 def myspf0q25(m,p):
     sound=p+"/"+m+".wav"
@@ -256,7 +256,7 @@ def myspf0q25(m,p):
     except:
         z3=0
         print ("Try again the sound of the audio was not clear")
-    return;
+    return None
 
 def myspf0q75(m,p):
     sound=p+"/"+m+".wav"
@@ -273,15 +273,19 @@ def myspf0q75(m,p):
     except:
         z3=0
         print ("Try again the sound of the audio was not clear")
-    return;
+    return None
 
 def mysptotal(m,p):
     sound=p+"/"+m+".wav"
     sourcerun=p+"/myspsolution.praat"
     path=p+"/"
     try:
-        objects= run_file(sourcerun, -20, 2, 0.3, "yes",sound,path, 80, 400, 0.01, capture_output=True)
-        print (objects[0]) # This will print the info from the sound object, and objects[0] is a parselmouth.Sound object
+        objects = run_file(sourcerun, -20, 2, 0.3, "yes", sound,path, 80, 400, 0.01, capture_output=True)
+        
+        """ Edit """
+        #print (objects[0]) # This will print the info from the sound object, and objects[0] is a parselmouth.Sound object
+        """ End of Edit """
+        
         z1=str( objects[1]) # This will print the info from the textgrid object, and objects[1] is a parselmouth.Data object with a TextGrid inside
         z2=z1.strip().split()
         z3=np.array(z2)
@@ -290,10 +294,14 @@ def mysptotal(m,p):
         dataset=pd.DataFrame({"number_ of_syllables":z5[0,:],"number_of_pauses":z5[1,:],"rate_of_speech":z5[2,:],"articulation_rate":z5[3,:],"speaking_duration":z5[4,:],
                           "original_duration":z5[5,:],"balance":z5[6,:],"f0_mean":z5[7,:],"f0_std":z5[8,:],"f0_median":z5[9,:],"f0_min":z5[10,:],"f0_max":z5[11,:],
                           "f0_quantile25":z5[12,:],"f0_quan75":z5[13,:]})
-        print (dataset.T)
+        
+        """ Edit """
+        #print (dataset.T)
+        return dataset
+        """ End of Edit """
     except:
         print ("Try again the sound of the audio was not clear")
-    return;
+    return None
 
 def mysppron(m,p):
     sound=p+"/"+m+".wav"
@@ -312,7 +320,7 @@ def mysppron(m,p):
         print ("Pronunciation_posteriori_probability_score_percentage= :%.2f" % (b))
     except:
         print ("Try again the sound of the audio was not clear")
-    return;
+    return None
 
 def myspgend(m,p):
     sound=p+"/"+m+".wav"

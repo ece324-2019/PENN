@@ -15,3 +15,27 @@ Installing other Python packages required
 ```
 $ pip install -r requirements.txt
 ```
+
+## Downloading Data
+
+We used the RAVDESS Emotional speech audio dataset found at this link
+[RAVDESS](https://www.kaggle.com/uwrfkaggler/ravdess-emotional-speech-audio/data#)
+
+Download the dataset and unzip the file. The data should be in a directory named `ravdess-emotional-speech-audio`. Move this directory into the root directory `PENN`
+
+### About the Dataset
+
+
+
+## Software we downloaded
+Downloading Librosa
+```
+$ conda install -c conda-forge librosa
+```
+
+Downloading PyDub
+```
+$ conda install -c conda-forge pydub
+```
+
+My-Voice-Analysis library is included in the project
