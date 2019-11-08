@@ -135,11 +135,10 @@ dmypy.json
 .DS_Store
 
 # audio test file
-Tagging/audio
-website/really_long
-website/long
-website/short
 node_modules
 
 # Visual Studio
 .vscode
+
+# dataset
+ravdess-emotional-speech-audio
