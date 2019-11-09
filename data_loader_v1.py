@@ -62,7 +62,6 @@ for Actor in dir_list: #for loops through the actor
     fname = os.listdir(os.path.join(RAV, Actor))
     for f in fname:
         part = f.split('.')[0].split('-') # part = [['03', '01', '02', '01', '01', '01', '08']
-        #HERE ARE THE GUYS, ALL 8 EMOTIONS
         gender = RAVDESS["gender"][int(part[6])%2]
         mood = RAVDESS["emotion"][part[2]]
         shutil.move(os.path.join(RAV, Actor, f), f"./RAVDESS/{gender}/{mood}/")
