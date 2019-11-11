@@ -81,6 +81,10 @@ std = np.std(train_data, axis=0)
 train_data = (train_data - mean)/std
 valid_data = (valid_data - mean)/std
 
+print(type(train_data))
+print(train_data.shape)
+print(train_data)
+
 
 
 
