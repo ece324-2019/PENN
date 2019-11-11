@@ -141,6 +141,5 @@ node_modules
 .vscode
 
 # dataset
-ravdess-emotional-speech-audio
-savee
-RAVDESS
+raw_data
+data
