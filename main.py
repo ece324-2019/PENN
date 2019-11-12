@@ -111,7 +111,8 @@ def training_loop(model, train_iter, valid_iter, test_iter, optimizer, loss_fnc,
 def main():
     
     #model = MLP(input_size=30*216, output_size=16)
-    model = Average(input_size=216, output_size=16)
+    #model = Average(input_size=216, output_size=16)
+    model = CNN(30)
 
     hyperparameters = {
         "optimizer" : torch.optim.Adam,

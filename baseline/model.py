@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 class MLP(nn.Module):
 
@@ -23,7 +22,7 @@ class MLP(nn.Module):
         elif len(hidden_layers) == 1:
             self.mlp = nn.Sequential(
                 nn.Linear(input_size, hidden_layers[0]),
-                F.relu(),
+                nn.ReLU(),
                 nn.Linear(hidden_layers[-1], output_size),
                 nn.Softmax()
             )
@@ -31,11 +30,11 @@ class MLP(nn.Module):
             Hidden = []
             for i in range(len(hidden_layers)-1):
                 Hidden.append( nn.Linear(hidden_layers[i], hidden_layers[i+1]) )
-                Hidden.append( F.relu() )
+                Hidden.append( nn.ReLU() )
             print(Hidden)
             self.mlp = nn.Sequential(
                 nn.Linear(input_size, hidden_layers[0]),
-                F.relu(),
+                nn.ReLU(),
                 *Hidden,
                 nn.Linear(hidden_layers[-1], output_size),
                 nn.Softmax()
@@ -62,4 +61,4 @@ class Average(nn.Module):
         #average = x.mean(1)
         x = torch.reshape(x, (x.size()[0], 216, 30))
         average = x.mean(2)
-        return self.fc(average).squeeze()
+        return nn.Softmax( self.fc(average).squeeze() )
