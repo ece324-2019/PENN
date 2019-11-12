@@ -18,7 +18,18 @@ SEED = 100
 
 def RAVDESS_reordering():
     RAV = f"{ROOT}/ravdess-emotional-speech-audio/"
-    dir_list = os.listdir(RAV)
+    
+    try:
+        dir_list = os.listdir(RAV)
+    except:
+        #print(f"{ROOT}/ravdess-emotional-speech-audio/ does not exists")
+        try:
+            dir_list = os.listdir(f"{ROOT}/raw_data")
+            print("Data files has already been reordered")
+        except:
+            print("You have not imported the RAVDESS dataset. Go to https://www.kaggle.com/uwrfkaggler/ravdess-emotional-speech-audio, download the data, and put it in the PENN directory")
+        return None
+    
     dir_list.sort() #list of "Actor_1", "Actor_2" ...
 
     # getting rid of unneeded directories
@@ -177,6 +188,6 @@ def split_data(df):
     overfit_label.to_csv(path_or_buf=f"{ROOT}/data/overfit_label.tsv", sep='\t', index=True, header=True)
 
 if __name__ == "__main__":
-    #RAVDESS_reordering()
-    df = RAVDESS_mfcc_conversion()
-    split_data(df)
+    RAVDESS_reordering()
+    #df = RAVDESS_mfcc_conversion()
+    #split_data(df)

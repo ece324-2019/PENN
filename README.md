@@ -23,6 +23,19 @@ We used the RAVDESS Emotional speech audio dataset found at this link
 
 Download the dataset and unzip the file. The data should be in a directory named `ravdess-emotional-speech-audio`. Move this directory into the root directory `PENN`
 
+Execute the following:
+```
+$ python data_handling/preprocessing.py
+```
+This should take a while. The following will be created
+* `raw_data` directory with the data from the `ravdess-emotional-speech-audio` reformatted in a more convienent way
+* `data` directory containing `.tsv` files of the different datasets
+
+To use the model modify the `main.py` code as needed and execute
+```
+$ python main.py
+```
+
 ### About the RAVDESS Dataset
 
 File Naming
