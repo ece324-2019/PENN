@@ -14,6 +14,7 @@ import shutil
 import json
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SEED = 100
 
 def RAVDESS_reordering():
     RAV = f"{ROOT}/ravdess-emotional-speech-audio/"
@@ -37,11 +38,11 @@ def RAVDESS_reordering():
         print(f"created {ROOT}raw_data/RAVDESS")
     except:
         print(f"{ROOT}/raw_data/RAVDESS already exists")
-    for i in dir_list: #for loops through the actor
-        fname_list = os.listdir(os.path.join(RAV, i))
+    for i, actor in enumerate(dir_list): #for loops through the actor
+        fname_list = os.listdir(os.path.join(RAV, actor))
         fname_list.sort()
         for f in fname_list:
-            shutil.move(os.path.join(RAV, i, f), f"{ROOT}/raw_data/RAVDESS")
+            shutil.move(os.path.join(RAV, actor, f), f"{ROOT}/raw_data/RAVDESS")
 
 
 def RAVDESS_mfcc_conversion():
@@ -53,8 +54,6 @@ def RAVDESS_mfcc_conversion():
     dir_list.sort() #Female -> Male
 
     RAVDESS_metadata = json.load(open(f"{ROOT}/raw_data/RAVDESS_metadata.json", "r"))
-
-    X = np.empty(shape=(1440, 30, 216, 1))
 
     # generate list of all files within an emotion in order
     fname_list = os.listdir(os.path.join(RAV))
@@ -87,10 +86,6 @@ def RAVDESS_mfcc_conversion():
     return df
 
 def split_data(df):
-
-    # Integer encoding Labels
-    le = LabelEncoder()
-    df_label_ints = le.fit_transform( df["label"] )
     
     # creating a directory we will need later
     try:
@@ -99,39 +94,85 @@ def split_data(df):
     except:
         print(f"{ROOT}/data already exists")
     
+    # Integer encoding Labels
+    le = LabelEncoder()
+    df_label_ints = le.fit_transform( df["label"] )
+
+    # replacing cateogory labels with integers
+    df["label"] = df_label_ints
+
     # Saving Mapping in order to reconstruct label from encoding
     Mapping = dict(zip( le.classes_, le.transform(le.classes_) ))
     Mapping = {str(Mapping[label]) : label for label in Mapping}
     with open(f"{ROOT}/data/Mapping.json", "w+") as g:
         json.dump(Mapping, g, indent=4)
+
+    # creating an equal distribution of labels
+    Data_Splits = {"train" : {}, "valid" : {}, "test" : {}}
+    for int_category in Mapping:
+        train_category_df, test_category_df = train_test_split(  
+                                                            df.loc[ df["label"] == int(int_category) ], 
+                                                            test_size=0.20,
+                                                            random_state=SEED
+                                                        )
+        train_category_df, valid_category_df = train_test_split(  
+                                                            train_category_df.loc[ train_category_df["label"] == int(int_category) ], 
+                                                            test_size=0.20,
+                                                            random_state=SEED
+                                                        )
+
+        Data_Splits["train"][Mapping[int_category]] = train_category_df
+        Data_Splits["valid"][Mapping[int_category]] = valid_category_df
+        Data_Splits["test"][Mapping[int_category]] = test_category_df
     
-    # replacing cateogory labels with integers
-    df["label"] = df_label_ints
+    # printing amount of data in each category
+    for dataset in Data_Splits:
+        print(f"{dataset.title()} Data")
+        total = 0
+        for category in Data_Splits[dataset]:
+            curr = Data_Splits[dataset][category].shape[0]
+            print(f"\t{category}:\t\t{curr}")
+            total += curr
+        print(f"\tTotal: {int(total)}")
+    
+    # concatinating everything together and separating out labels
+    train_data = pd.concat( Data_Splits["train"].values(), axis=0 )
+    train_label = train_data["label"]
+    train_data = train_data.drop(["label"], axis=1)
 
-    # Training and Validation Data
-    train_data, valid_data, train_label, valid_label = train_test_split(    df.drop(["label"], axis=1),
-                                                                            df["label"],
-                                                                            test_size=0.20,
-                                                                            shuffle=True,
-                                                                            random_state=100)
+    valid_data = pd.concat( Data_Splits["valid"].values(), axis=0 )
+    valid_label = valid_data["label"]
+    valid_data = valid_data.drop(["label"], axis=1)
 
-    # Overfit Data
-    overfit_data = df.sample(n=50, random_state=100)
+    test_data = pd.concat( Data_Splits["test"].values(), axis=0 )
+    test_label = test_data["label"]
+    test_data = test_data.drop(["label"], axis=1)
+
+    # Overfit Data with equal distribution of labels
+    overfit_data = pd.DataFrame(columns=df.columns)
+    for int_category in Mapping:
+        category_df = df.loc[ df["label"] == int(int_category) ].sample(n=10, random_state=SEED)
+        overfit_data = pd.concat( (overfit_data, category_df), axis=0 )
     overfit_label = overfit_data["label"]
     overfit_data = overfit_data.drop(["label"], axis=1)
 
-    # Need to normalize data, normalize valid data based off of normalization of training data
+    # Need to normalize data, normalize other based off of normalization of training data
     mean = np.mean(train_data, axis=0)
     std = np.std(train_data, axis=0)
     train_data = (train_data - mean)/std
     valid_data = (valid_data - mean)/std
+    test_data = (test_data - mean)/std
     overfit_data = (overfit_data - mean)/std
+    print("Mean:", mean)
+    print("Standard Deviation:", std)
 
     # Saving to tsv
     train_data.to_csv(path_or_buf=f"{ROOT}/data/train_data.tsv", sep='\t', index=True, header=True)
     train_label.to_csv(path_or_buf=f"{ROOT}/data/train_label.tsv", sep='\t', index=True, header=True)
     valid_data.to_csv(path_or_buf=f"{ROOT}/data/valid_data.tsv", sep='\t', index=True, header=True)
     valid_label.to_csv(path_or_buf=f"{ROOT}/data/valid_label.tsv", sep='\t', index=True, header=True)
+    test_data.to_csv(path_or_buf=f"{ROOT}/data/test_data.tsv", sep='\t', index=True, header=True)
+    test_label.to_csv(path_or_buf=f"{ROOT}/data/test_label.tsv", sep='\t', index=True, header=True)
     overfit_data.to_csv(path_or_buf=f"{ROOT}/data/overfit_data.tsv", sep='\t', index=True, header=True)
     overfit_label.to_csv(path_or_buf=f"{ROOT}/data/overfit_label.tsv", sep='\t', index=True, header=True)
 

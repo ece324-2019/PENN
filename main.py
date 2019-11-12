@@ -20,16 +20,16 @@ def evaluate(model, data_loader, loss_fnc):
             running_loss += loss_fnc(input=predictions, target=labels)
             total_batches += 1
 
-            corr = torch.argmax(predictions, dim=1) == labels
+            corr = ( torch.argmax(predictions, dim=1) == labels )
             correct += int(corr.sum())
             total_samples += labels.size(0)
 
     return float(running_loss) / total_batches, float(correct) / total_samples
 
-def training_loop(model, train_iter, valid_iter, loss_fnc, epochs, batch_size, lr, eval_every):
+def training_loop(model, train_iter, valid_iter, test_iter, optimizer, loss_fnc, epochs, batch_size, lr, eval_every, save=False):
     
     model.train()
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    optimizer = optimizer(model.parameters(), lr=lr)
 
     training_error = []
     validation_error = []
@@ -38,11 +38,13 @@ def training_loop(model, train_iter, valid_iter, loss_fnc, epochs, batch_size, l
 
     print("Start Training")
     # training loop
+    evaluated_data = 0
     total_batches = 0
     running_loss = 0.0
     running_acc = 0.0
     for e in range(epochs):
         for i, (batch, labels) in enumerate(train_iter):
+            evaluated_data += labels.size()[0]
             total_batches += 1
 
             # re-initializing optimizer
@@ -66,17 +68,19 @@ def training_loop(model, train_iter, valid_iter, loss_fnc, epochs, batch_size, l
                 model.eval()
                 loss, acc = evaluate(model, valid_iter, loss_fnc)
                 
-                training_error.append( running_loss/eval_every )
+                training_error.append( running_loss / eval_every )
                 validation_error.append( loss )
 
-                training_acc.append( running_acc / (eval_every*labels.size()[0])  )
+                training_acc.append( running_acc / evaluated_data  )
                 validation_acc.append( acc )
                 
                 print(f"epoch: {e+1:4d}\tbatch: {i+1:5d}\tloss: {training_error[-1]:.4f}\tAcc: {acc:.4f}")
 
+                evaluated_data = 0
                 running_loss = 0.0
                 running_acc = 0.0
                 model.train()
+            
     print("End Training")
 
     # Creating plots
@@ -88,6 +92,21 @@ def training_loop(model, train_iter, valid_iter, loss_fnc, epochs, batch_size, l
                 train_accuracy=training_acc,
                 valid_accuracy=validation_acc, 
                 title=None)
+    
+    # Final evaluation of Validation and Test Data
+    print()
+    print()
+    print(f"Training Loss: {training_error[-1]:.4f}\tTraining Accuracy: {training_acc[-1]*100:.2f}")
+    loss, acc = evaluate(model, valid_iter, loss_fnc)
+    print(f"Validation Loss: {loss:.4f}\tValidation Accuracy: {acc*100:.2f}")
+    loss, acc = evaluate(model, test_iter, loss_fnc)
+    print(f"Testing Loss: {loss:.4f}\tTesting Accuracy: {acc*100:.2f}")
+    print()
+    print()
+
+    if save:
+        torch.save(model, f"{model.__class__.__name__}.pt")
+        print(f"Model saved as '{model.__class__.__name__}.pt'")
 
 def main():
     
@@ -95,15 +114,16 @@ def main():
     model = Average(input_size=216, output_size=16)
 
     hyperparameters = {
+        "optimizer" : torch.optim.Adam,
         "loss_fnc" : nn.CrossEntropyLoss(),
-        "epochs" : 100,
+        "epochs" : 200,
         "batch_size" : 64,
         "lr" : 0.001,
         "eval_every" : 10
     }
 
-    train_iter, valid_iter = load_data(hyperparameters["batch_size"])
-    training_loop(model, train_iter, valid_iter, **hyperparameters)
+    train_iter, valid_iter, test_iter = load_data(hyperparameters["batch_size"], overfit=True)
+    training_loop(model, train_iter, valid_iter, test_iter, **hyperparameters)
 
 if __name__ == "__main__":
     main()

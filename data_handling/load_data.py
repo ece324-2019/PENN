@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 
 import pandas as pd
+
 import json
 import os
 
@@ -12,7 +13,7 @@ def get_data(overfit=False):
     if overfit:
         overfit_data = pd.read_csv(f"{ROOT}/data/overfit_data.tsv", sep='\t', index_col=0).reset_index(drop=True)
         overfit_label = pd.read_csv(f"{ROOT}/data/overfit_label.tsv", sep='\t', index_col=0).reset_index(drop=True)
-        return overfit_data, overfit_label, overfit_data, overfit_label
+        return overfit_data, overfit_label, overfit_data, overfit_label, overfit_data, overfit_label
     else:
         train_data = pd.read_csv(f"{ROOT}/data/train_data.tsv", sep='\t', index_col=0).reset_index(drop=True)
         train_label = pd.read_csv(f"{ROOT}/data/train_label.tsv", sep='\t', index_col=0).reset_index(drop=True)
@@ -20,7 +21,10 @@ def get_data(overfit=False):
         valid_data = pd.read_csv(f"{ROOT}/data/valid_data.tsv", sep='\t', index_col=0).reset_index(drop=True)
         valid_label = pd.read_csv(f"{ROOT}/data/valid_label.tsv", sep='\t', index_col=0).reset_index(drop=True)
 
-        return train_data, train_label, valid_data, valid_label
+        test_data = pd.read_csv(f"{ROOT}/data/test_data.tsv", sep='\t', index_col=0).reset_index(drop=True)
+        test_label = pd.read_csv(f"{ROOT}/data/test_label.tsv", sep='\t', index_col=0).reset_index(drop=True)
+
+        return train_data, train_label, valid_data, valid_label, test_data, test_label
 
 def one_hot_encode(df_label):
     
@@ -32,9 +36,9 @@ def one_hot_encode(df_label):
 
     return tensor_labels_onehot
 
-def load_data(batch_size):
+def load_data(batch_size, overfit=False):
 
-    train_data, train_label, valid_data, valid_label = get_data()
+    train_data, train_label, valid_data, valid_label, test_data, test_label = get_data(overfit=overfit)
     
     train_data = torch.from_numpy( train_data.to_numpy() )
     train_label = torch.from_numpy( train_label.to_numpy() ).squeeze()
@@ -43,11 +47,16 @@ def load_data(batch_size):
     valid_data = torch.from_numpy( valid_data.to_numpy() )
     valid_label = torch.from_numpy( valid_label.to_numpy() ).squeeze()
     #valid_label = one_hot_encode(valid_label)
+
+    test_data = torch.from_numpy( test_data.to_numpy() )
+    test_label = torch.from_numpy( test_label.to_numpy() ).squeeze()
+    #test_label = one_hot_encode(test_label)
     
     train_iter = DataLoader(TensorDataset(train_data, train_label), batch_size=batch_size, shuffle=True)
     valid_iter = DataLoader(TensorDataset(valid_data, valid_label), batch_size=batch_size)
+    test_iter = DataLoader(TensorDataset(test_data, test_label), batch_size=batch_size)
 
-    return train_iter, valid_iter
+    return train_iter, valid_iter, test_iter
 
 if __name__ == "__main__":
     
@@ -63,5 +72,5 @@ if __name__ == "__main__":
     print(overfit_label)
     """
 
-    train_iter, valid_iter = load_data(64)
+    train_iter, valid_iter, test_iter = load_data(64)
     print(train_iter)
