@@ -5,25 +5,26 @@ import pandas as pd
 import json
 import os
 
+# TODO: Make it so it doesn't matter what file you run this from
 
 def get_data(overfit=False):
     
     if overfit:
-        overfit_data = pd.read_csv("data/overfit_data.tsv", sep='\t', index_col=0).reset_index(drop=True)
+        overfit_data = pd.read_csv("./data/overfit_data.tsv", sep='\t', index_col=0).reset_index(drop=True)
         overfit_label = pd.read_csv("data/overfit_label.tsv", sep='\t', index_col=0).reset_index(drop=True)
         return overfit_data, overfit_label, overfit_data, overfit_label
     else:
-        train_data = pd.read_csv("data/train_data.tsv", sep='\t', index_col=0).reset_index(drop=True)
-        train_label = pd.read_csv("data/train_label.tsv", sep='\t', index_col=0).reset_index(drop=True)
+        train_data = pd.read_csv("./data/train_data.tsv", sep='\t', index_col=0).reset_index(drop=True)
+        train_label = pd.read_csv("./data/train_label.tsv", sep='\t', index_col=0).reset_index(drop=True)
 
-        valid_data = pd.read_csv("data/valid_data.tsv", sep='\t', index_col=0).reset_index(drop=True)
-        valid_label = pd.read_csv("data/valid_label.tsv", sep='\t', index_col=0).reset_index(drop=True)
+        valid_data = pd.read_csv("./data/valid_data.tsv", sep='\t', index_col=0).reset_index(drop=True)
+        valid_label = pd.read_csv("./data/valid_label.tsv", sep='\t', index_col=0).reset_index(drop=True)
 
         return train_data, train_label, valid_data, valid_label
 
 def one_hot_encode(df_label):
     
-    Mapping = json.load(open("data/Mapping.json", "r"))
+    Mapping = json.load(open("./data/Mapping.json", "r"))
     
     tensor_label_ints = torch.from_numpy( df_label.values ).transpose(0, 1)
     tensor_labels_onehot = torch.zeros(tensor_label_ints.shape[1], len(Mapping))

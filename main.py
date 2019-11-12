@@ -1,4 +1,4 @@
-from baseline.model import Baseline
+from baseline.model import MLP, Average
 from CNN.model import CNN
 
 from data_handling.load_data import *
@@ -91,7 +91,8 @@ def training_loop(model, train_iter, valid_iter, loss_fnc, epochs, batch_size, l
 
 def main():
     
-    model = Baseline(input_size=216, output_size=16)
+    #model = MLP(input_size=30*216, output_size=16)
+    model = Average(input_size=216, output_size=16)
 
     hyperparameters = {
         "loss_fnc" : nn.CrossEntropyLoss(),

@@ -2,13 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class Baseline(nn.Module):
+class MLP(nn.Module):
 
     """ Very simple MLP
     """
 
     def __init__(self, input_size, output_size, hidden_layers=[], seed=None):
-        super(Baseline, self).__init__()
+        super(MLP, self).__init__()
 
         # seed for reproducability
         if seed != None:
@@ -45,3 +45,21 @@ class Baseline(nn.Module):
     
     def forward(self, x):
         return self.mlp(x)
+
+class Average(nn.Module):
+
+    def __init__(self, input_size, output_size, seed=None):
+        super(Average, self).__init__()
+
+        # seed for reproducability
+        if seed != None:
+            torch.manual_seed(seed)
+        
+        self.fc = nn.Linear(input_size, output_size)
+    
+    def forward(self, x):
+        #x = torch.reshape(x, (x.size()[0], 30, 216))
+        #average = x.mean(1)
+        x = torch.reshape(x, (x.size()[0], 216, 30))
+        average = x.mean(2)
+        return self.fc(average).squeeze()
