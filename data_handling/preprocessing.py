@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import specgram
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import os
 import shutil
@@ -57,14 +58,18 @@ def RAVDESS_mfcc_conversion():
     fname_list.sort()
     # loop through all files
     for index, f in enumerate(fname_list):    
+        
         # get the file name, part is a list with the important info of each file
         file = os.path.join(RAV, f)
         part = f.split('.')[0].split('-')
+        
         # Convert .wav file to a integer array using Librosa
         X, sample_rate = librosa.load(file, res_type='kaiser_fast', duration=2.5, sr=44100, offset=0.5)
         sample_rate = np.array(sample_rate)
+        
         # Take integer array and convert it to a MFCC
         mfccs = np.mean(librosa.feature.mfcc(y=X, sr=sample_rate, n_mfcc=30), axis=0)
+        
         # Add mfcc representation of recording as well as its gender and emotion label to panda frames
         df_mfcc.loc[index] = [mfccs]
         gender = RAVDESS_metadata["gender"][int(part[6])%2]
@@ -74,15 +79,39 @@ def RAVDESS_mfcc_conversion():
     # need to get rid of the missing values (NA) in the feature column so have to split that up
     expanded_mfcc = pd.DataFrame(df_mfcc['feature'].values.tolist())
     expanded_mfcc =expanded_mfcc.fillna(0)
-
+    
     # Concatenate into a single dataframe with shape = 1440 by 217
     # column 0 as the label then column 1 to column 216 are the 217 values of the MFCC array
     # index = 0 to 1440, feature = MFCC array with length = 13, label = "gender_emotion"
-    df = pd.concat([df_label,expanded_mfcc], axis =1)
+    df = pd.concat([df_label, expanded_mfcc], axis=1)
+
+    return df
+
+def split_data(df):
+
+    # Integer encoding Labels
+    le = LabelEncoder()
+    df_label_ints = le.fit_transform( df["label"] )
+    
+    # creating a directory we will need later
+    try:
+        os.mkdir("./data")
+        print("created ./data")
+    except:
+        print("./data already exists")
+    
+    # Saving Mapping in order to reconstruct label from encoding
+    Mapping = dict(zip( le.classes_, le.transform(le.classes_) ))
+    Mapping = {str(Mapping[label]) : label for label in Mapping}
+    with open("./data/Mapping.json", "w+") as g:
+        json.dump(Mapping, g, indent=4)
+    
+    # replacing cateogory labels with integers
+    df["label"] = df_label_ints
 
     # Training and Validation Data
-    train_data, valid_data, train_label, valid_label = train_test_split(    df.drop(['label'], axis=1),
-                                                                            df['label'],
+    train_data, valid_data, train_label, valid_label = train_test_split(    df.drop(["label"], axis=1),
+                                                                            df["label"],
                                                                             test_size=0.20,
                                                                             shuffle=True,
                                                                             random_state=100)
@@ -90,7 +119,7 @@ def RAVDESS_mfcc_conversion():
     # Overfit Data
     overfit_data = df.sample(n=50, random_state=100)
     overfit_label = overfit_data["label"]
-    overfit_data = overfit_data.drop(['label'], axis=1)
+    overfit_data = overfit_data.drop(["label"], axis=1)
 
     # Need to normalize data, normalize valid data based off of normalization of training data
     mean = np.mean(train_data, axis=0)
@@ -100,11 +129,6 @@ def RAVDESS_mfcc_conversion():
     overfit_data = (overfit_data - mean)/std
 
     # Saving to tsv
-    try:
-        os.mkdir("./data")
-        print("created ./data")
-    except:
-        print("./data already exists")
     train_data.to_csv(path_or_buf='./data/train_data.tsv', sep='\t', index=True, header=True)
     train_label.to_csv(path_or_buf='./data/train_label.tsv', sep='\t', index=True, header=True)
     valid_data.to_csv(path_or_buf='./data/valid_data.tsv', sep='\t', index=True, header=True)
@@ -114,4 +138,5 @@ def RAVDESS_mfcc_conversion():
 
 if __name__ == "__main__":
     #RAVDESS_reordering()
-    RAVDESS_mfcc_conversion()
+    df = RAVDESS_mfcc_conversion()
+    split_data(df)
