@@ -1,21 +1,22 @@
+# manipulating audio
 import librosa
 import librosa.display
+
+# manipulating data
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.pyplot import specgram
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+
+# manipulating files
 import os
 import shutil
-import IPython.display as ipd  # To play sound in the notebook
 import json
-import librosa
-import librosa.display
 
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def RAVDESS_reordering():
-    RAV = "../data/ravdess-emotional-speech-audio/"
+    RAV = f"{ROOT}/ravdess-emotional-speech-audio/"
     dir_list = os.listdir(RAV)
     dir_list.sort() #list of "Actor_1", "Actor_2" ...
 
@@ -32,26 +33,26 @@ def RAVDESS_reordering():
         pass
 
     try:
-        os.mkdir("../raw_data/RAVDESS")
-        print("created ../raw_data/RAVDESS")
+        os.mkdir(f"{ROOT}/raw_data/RAVDESS")
+        print(f"created {ROOT}raw_data/RAVDESS")
     except:
-        print("../raw_data/RAVDESS already exists")
+        print(f"{ROOT}/raw_data/RAVDESS already exists")
     for i in dir_list: #for loops through the actor
         fname_list = os.listdir(os.path.join(RAV, i))
         fname_list.sort()
         for f in fname_list:
-            shutil.move(os.path.join(RAV, i, f), "../raw_data/RAVDESS")
+            shutil.move(os.path.join(RAV, i, f), f"{ROOT}/raw_data/RAVDESS")
 
 
 def RAVDESS_mfcc_conversion():
-    RAV = "../raw_data/RAVDESS/"
+    RAV = f"{ROOT}/raw_data/RAVDESS/"
     df_mfcc = pd.DataFrame(columns=['feature'])
     df_label = pd.DataFrame(columns=['label'])
 
     dir_list = os.listdir(RAV)
     dir_list.sort() #Female -> Male
 
-    RAVDESS_metadata = json.load(open("../raw_data/RAVDESS_metadata.json", "r"))
+    RAVDESS_metadata = json.load(open(f"{ROOT}/raw_data/RAVDESS_metadata.json", "r"))
 
     X = np.empty(shape=(1440, 30, 216, 1))
 
@@ -93,15 +94,15 @@ def split_data(df):
     
     # creating a directory we will need later
     try:
-        os.mkdir("../data")
-        print("created ./data")
+        os.mkdir(f"{ROOT}/data")
+        print(f"created {ROOT}/data")
     except:
-        print("../data already exists")
+        print(f"{ROOT}/data already exists")
     
     # Saving Mapping in order to reconstruct label from encoding
     Mapping = dict(zip( le.classes_, le.transform(le.classes_) ))
     Mapping = {str(Mapping[label]) : label for label in Mapping}
-    with open("../data/Mapping.json", "w+") as g:
+    with open(f"{ROOT}/data/Mapping.json", "w+") as g:
         json.dump(Mapping, g, indent=4)
     
     # replacing cateogory labels with integers
@@ -127,14 +128,14 @@ def split_data(df):
     overfit_data = (overfit_data - mean)/std
 
     # Saving to tsv
-    train_data.to_csv(path_or_buf='../data/train_data.tsv', sep='\t', index=True, header=True)
-    train_label.to_csv(path_or_buf='../data/train_label.tsv', sep='\t', index=True, header=True)
-    valid_data.to_csv(path_or_buf='../data/valid_data.tsv', sep='\t', index=True, header=True)
-    valid_label.to_csv(path_or_buf='../data/valid_label.tsv', sep='\t', index=True, header=True)
-    overfit_data.to_csv(path_or_buf='../data/overfit_data.tsv', sep='\t', index=True, header=True)
-    overfit_label.to_csv(path_or_buf='../data/overfit_label.tsv', sep='\t', index=True, header=True)
+    train_data.to_csv(path_or_buf=f"{ROOT}/data/train_data.tsv", sep='\t', index=True, header=True)
+    train_label.to_csv(path_or_buf=f"{ROOT}/data/train_label.tsv", sep='\t', index=True, header=True)
+    valid_data.to_csv(path_or_buf=f"{ROOT}/data/valid_data.tsv", sep='\t', index=True, header=True)
+    valid_label.to_csv(path_or_buf=f"{ROOT}/data/valid_label.tsv", sep='\t', index=True, header=True)
+    overfit_data.to_csv(path_or_buf=f"{ROOT}/data/overfit_data.tsv", sep='\t', index=True, header=True)
+    overfit_label.to_csv(path_or_buf=f"{ROOT}/data/overfit_label.tsv", sep='\t', index=True, header=True)
 
 if __name__ == "__main__":
     #RAVDESS_reordering()
     df = RAVDESS_mfcc_conversion()
-    #split_data(df)
+    split_data(df)
