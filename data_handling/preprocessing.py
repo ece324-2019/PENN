@@ -57,7 +57,7 @@ def RAVDESS_reordering():
             shutil.move(os.path.join(RAV, actor, f), f"{ROOT}/raw_data/RAVDESS")
 
 
-def RAVDESS_mfcc_conversion():
+def RAVDESS_mfcc_conversion(sr=44100, n_mfcc=30, duration=2.5):
     RAV = f"{ROOT}/raw_data/RAVDESS/"
     df_mfcc = pd.DataFrame(columns=['feature'])
     df_label = pd.DataFrame(columns=['label'])
@@ -70,6 +70,7 @@ def RAVDESS_mfcc_conversion():
     # generate list of all files within an emotion in order
     fname_list = os.listdir(os.path.join(RAV))
     fname_list.sort()
+    audio_length = 0
     # loop through all files
     for index, f in enumerate(fname_list):    
         
@@ -78,9 +79,9 @@ def RAVDESS_mfcc_conversion():
         part = f.split('.')[0].split('-')
         
         # Convert .wav file to a integer array using Librosa
-        data, _ = librosa.load(file, res_type='kaiser_fast', sr=44100, duration=2.5)
-        MFCC = librosa.feature.mfcc(data, sr=44100, n_mfcc=30)
-        # MFCC.shape = (30, 216)
+        data, _ = librosa.load(file, res_type='kaiser_fast', sr=sr, duration=duration)
+        MFCC = librosa.feature.mfcc(data, sr=sr, n_mfcc=n_mfcc)
+        n_mfcc, audio_length = MFCC.shape   # (30, 216) for default inputs
 
         # Add mfcc representation of recording as well as its gender and emotion label to panda frames
         df_mfcc.loc[index] = [MFCC.flatten()]
@@ -95,16 +96,9 @@ def RAVDESS_mfcc_conversion():
     # Concatenate into a single dataframe
     df = pd.concat([df_label, expanded_mfcc], axis=1)
 
-    return df
+    return df, n_mfcc, audio_length
 
-def split_data(df):
-    
-    # creating a directory we will need later
-    try:
-        os.mkdir(f"{ROOT}/data")
-        print(f"created {ROOT}/data")
-    except:
-        print(f"{ROOT}/data already exists")
+def split_data(df, n_mfcc, audio_length):
     
     # Integer encoding Labels
     le = LabelEncoder()
@@ -113,11 +107,10 @@ def split_data(df):
     # replacing cateogory labels with integers
     df["label"] = df_label_ints
 
-    # Saving Mapping in order to reconstruct label from encoding
+    # Getting Mapping in order to reconstruct label from encoding
+    # This will be saved to a json file `Metadata.json` later
     Mapping = dict(zip( le.classes_, le.transform(le.classes_) ))
     Mapping = {str(Mapping[label]) : label for label in Mapping}
-    with open(f"{ROOT}/data/Mapping.json", "w+") as g:
-        json.dump(Mapping, g, indent=4)
 
     # creating an equal distribution of labels
     Data_Splits = {"train" : {}, "valid" : {}, "test" : {}}
@@ -179,6 +172,15 @@ def split_data(df):
     # TODO: We might not have done the mean correctly
     #print("Mean:", mean)
     #print("Standard Deviation:", std)
+    mean = 10
+    std = 10
+
+    # creating a directory we will need later
+    try:
+        os.mkdir(f"{ROOT}/data")
+        print(f"created {ROOT}/data")
+    except:
+        print(f"{ROOT}/data already exists")
 
     # Saving to tsv
     train_data.to_csv(path_or_buf=f"{ROOT}/data/train_data.tsv", sep='\t', index=True, header=True)
@@ -190,7 +192,12 @@ def split_data(df):
     overfit_data.to_csv(path_or_buf=f"{ROOT}/data/overfit_data.tsv", sep='\t', index=True, header=True)
     overfit_label.to_csv(path_or_buf=f"{ROOT}/data/overfit_label.tsv", sep='\t', index=True, header=True)
 
+    # saving relavent metadata
+    Metadata = {"mapping" : Mapping, "n_mfcc" : n_mfcc, "audio_length" : audio_length, "mean" : mean, "std" : std}
+    with open(f"{ROOT}/data/Metadata.json", "w+") as g:
+        json.dump(Metadata, g, indent=4)
+
 if __name__ == "__main__":
-    RAVDESS_reordering()
-    df = RAVDESS_mfcc_conversion()
-    split_data(df)
+    #RAVDESS_reordering()
+    df, n_mfcc, audio_length = RAVDESS_mfcc_conversion()
+    split_data(df, n_mfcc, audio_length)

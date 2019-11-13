@@ -139,6 +139,7 @@ node_modules
 
 # Visual Studio
 .vscode
+test.py
 
 # dataset
 data
