@@ -17,7 +17,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SEED = 100
 
 def RAVDESS_reordering():
-    RAV = f"{ROOT}/ravdess-emotional-speech-audio/"
+    RAV = f"{ROOT}/raw_data/ravdess-emotional-speech-audio/"
     
     try:
         dir_list = os.listdir(RAV)
@@ -46,9 +46,10 @@ def RAVDESS_reordering():
 
     try:
         os.mkdir(f"{ROOT}/raw_data/RAVDESS")
-        print(f"created {ROOT}raw_data/RAVDESS")
+        print(f"created {ROOT}/raw_data/RAVDESS")
     except:
         print(f"{ROOT}/raw_data/RAVDESS already exists")
+    
     for i, actor in enumerate(dir_list): #for loops through the actor
         fname_list = os.listdir(os.path.join(RAV, actor))
         fname_list.sort()
@@ -174,8 +175,10 @@ def split_data(df):
     valid_data = (valid_data - mean)/std
     test_data = (test_data - mean)/std
     overfit_data = (overfit_data - mean)/std
-    print("Mean:", mean)
-    print("Standard Deviation:", std)
+    
+    # TODO: We might not have done the mean correctly
+    #print("Mean:", mean)
+    #print("Standard Deviation:", std)
 
     # Saving to tsv
     train_data.to_csv(path_or_buf=f"{ROOT}/data/train_data.tsv", sep='\t', index=True, header=True)
@@ -189,5 +192,5 @@ def split_data(df):
 
 if __name__ == "__main__":
     RAVDESS_reordering()
-    #df = RAVDESS_mfcc_conversion()
-    #split_data(df)
+    df = RAVDESS_mfcc_conversion()
+    split_data(df)
