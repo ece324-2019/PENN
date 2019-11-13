@@ -21,15 +21,16 @@ $ pip install -r requirements.txt
 We used the RAVDESS Emotional speech audio dataset found at this link
 [RAVDESS](https://www.kaggle.com/uwrfkaggler/ravdess-emotional-speech-audio/data#)
 
-Download the dataset and unzip the file. The data should be in a directory named `ravdess-emotional-speech-audio`. Move this directory into the root directory `PENN`
+Download the dataset and unzip the file. The data should be in a directory named `ravdess-emotional-speech-audio`. Move this directory into the directory `PENN/raw_data`
 
 Execute the following:
 ```
 $ python data_handling/preprocessing.py
 ```
 This should take a while. The following will be created
-* `raw_data` directory with the data from the `ravdess-emotional-speech-audio` reformatted in a more convienent way
+* `raw_data/RAVDESS` directory with the data from the `ravdess-emotional-speech-audio` reformatted in a more convienent way
 * `data` directory containing `.tsv` files of the different datasets
+You may delete the `ravdess-emotional-speech-audio` folder
 
 To use the model modify the `main.py` code as needed and execute
 ```
