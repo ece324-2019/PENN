@@ -141,5 +141,12 @@ node_modules
 .vscode
 
 # dataset
-raw_data
 data
+raw_data/RAVDESS
+raw_data/savee
+
+# data files
+*.tsv
+*.csv
+*.wav
+*.raw
