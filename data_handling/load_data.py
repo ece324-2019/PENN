@@ -28,27 +28,27 @@ def get_data(overfit=False):
 
 def one_hot_encode(df_label):
     
-    Mapping = json.load(open(f"{ROOT}/data/Mapping.json", "r"))
+    Metadata = json.load(open(f"{ROOT}/data/Metadata.json", "r"))
     
     tensor_label_ints = torch.from_numpy( df_label.values ).transpose(0, 1)
-    tensor_labels_onehot = torch.zeros(tensor_label_ints.shape[1], len(Mapping))
+    tensor_labels_onehot = torch.zeros(tensor_label_ints.shape[1], len(Metadata["mapping"]))
     tensor_labels_onehot[range(tensor_labels_onehot.shape[0]), tensor_label_ints] = 1
 
     return tensor_labels_onehot
 
-def load_data(batch_size, overfit=False):
+def load_data(batch_size, n_mfcc, audio_length, overfit=False):
 
     train_data, train_label, valid_data, valid_label, test_data, test_label = get_data(overfit=overfit)
     
-    train_data = torch.from_numpy( train_data.to_numpy() )
+    train_data = torch.from_numpy( train_data.to_numpy() ).reshape(-1, n_mfcc, audio_length)
     train_label = torch.from_numpy( train_label.to_numpy() ).squeeze()
     #train_label = one_hot_encode(train_label)
     
-    valid_data = torch.from_numpy( valid_data.to_numpy() )
+    valid_data = torch.from_numpy( valid_data.to_numpy() ).reshape(-1, n_mfcc, audio_length)
     valid_label = torch.from_numpy( valid_label.to_numpy() ).squeeze()
     #valid_label = one_hot_encode(valid_label)
 
-    test_data = torch.from_numpy( test_data.to_numpy() )
+    test_data = torch.from_numpy( test_data.to_numpy() ).reshape(-1, n_mfcc, audio_length)
     test_label = torch.from_numpy( test_label.to_numpy() ).squeeze()
     #test_label = one_hot_encode(test_label)
     
@@ -60,6 +60,8 @@ def load_data(batch_size, overfit=False):
 
 if __name__ == "__main__":
     
+    Metadata = json.load(open(f"{ROOT}/data/Metadata.json", "r"))
+
     """
     train_data, train_label, valid_data, valid_label = get_data()
     print(valid_data)
@@ -72,5 +74,11 @@ if __name__ == "__main__":
     print(overfit_label)
     """
 
-    train_iter, valid_iter, test_iter = load_data(64)
-    print(train_iter)
+    train_iter, valid_iter, test_iter = load_data(64, Metadata["n_mfcc"], Metadata["audio_length"])
+    for i, (batch, labels) in enumerate(train_iter):
+        if i > 2:
+            break
+        print(batch)
+        print(batch.size())
+        print(labels)
+        print()

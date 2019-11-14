@@ -110,20 +110,52 @@ def training_loop(model, train_iter, valid_iter, test_iter, optimizer, loss_fnc,
 
 def main():
     
-    #model = MLP(input_size=30*216, output_size=16)
-    #model = Average(input_size=216, output_size=16)
-    model = CNN(30)
+    Metadata = json.load(open(f"./data/Metadata.json", "r"))
+    n_mfcc = Metadata["n_mfcc"]
+    audio_length = Metadata["audio_length"]
+    n_classes = len(Metadata["mapping"])
 
-    hyperparameters = {
-        "optimizer" : torch.optim.Adam,
-        "loss_fnc" : nn.CrossEntropyLoss(),
-        "epochs" : 200,
-        "batch_size" : 64,
-        "lr" : 0.001,
-        "eval_every" : 10
-    }
+    #model_name = "mlp"
+    model_name = "average"
+    #model_name = "cnn"
 
-    train_iter, valid_iter, test_iter = load_data(hyperparameters["batch_size"], overfit=True)
+    model = None
+    hyperparameters = {}
+
+    if model_name.lower() == "mlp":
+        model = MLP(input_size=n_mfcc*audio_length, output_size=n_classes)
+        hyperparameters = {
+            "optimizer" : torch.optim.Adam,
+            "loss_fnc" : nn.CrossEntropyLoss(),
+            "epochs" : 100,
+            "batch_size" : 64,
+            "lr" : 0.001,
+            "eval_every" : 10
+        }
+    elif model_name.lower() == "average":
+        model = Average(input_size=audio_length, output_size=n_classes)
+        hyperparameters = {
+            "optimizer" : torch.optim.Adam,
+            "loss_fnc" : nn.CrossEntropyLoss(),
+            "epochs" : 500,
+            "batch_size" : 64,
+            "lr" : 0.1,
+            "eval_every" : 10
+        }
+    elif model_name.lower() == "cnn":
+        model = CNN(30)
+        hyperparameters = {
+            "optimizer" : torch.optim.Adam,
+            "loss_fnc" : nn.CrossEntropyLoss(),
+            "epochs" : 100,
+            "batch_size" : 64,
+            "lr" : 0.1,
+            "eval_every" : 10
+        }
+    else:
+        raise ValueError(f"Model '{model_name}' does not exist")
+
+    train_iter, valid_iter, test_iter = load_data(hyperparameters["batch_size"], n_mfcc, audio_length, overfit=True)
     training_loop(model, train_iter, valid_iter, test_iter, **hyperparameters)
 
 if __name__ == "__main__":
