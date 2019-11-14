@@ -1,5 +1,6 @@
 from baseline.model import MLP, Average
 from CNN.model import CNN
+from RNN.model import RNN
 
 from data_handling.load_data import *
 from utils import *
@@ -115,9 +116,10 @@ def main():
     audio_length = Metadata["audio_length"]
     n_classes = len(Metadata["mapping"])
 
-    model_name = "mlp"
+    #model_name = "mlp"
     #model_name = "average"
     #model_name = "cnn"
+    model_name = "rnn"
 
     model = None
     hyperparameters = {}
@@ -132,6 +134,7 @@ def main():
             "lr" : 0.001,
             "eval_every" : 10
         }
+        print("Created MLP baseline model")
     elif model_name.lower() == "average":
         model = Average(input_size=audio_length, output_size=n_classes)
         hyperparameters = {
@@ -142,8 +145,9 @@ def main():
             "lr" : 0.1,
             "eval_every" : 10
         }
+        print("Created Averaging CNN baseline model")
     elif model_name.lower() == "cnn":
-        model = CNN(30)
+        model = CNN(n_mfcc=n_mfcc, n_classes=n_classes)
         hyperparameters = {
             "optimizer" : torch.optim.Adam,
             "loss_fnc" : nn.CrossEntropyLoss(),
@@ -152,10 +156,22 @@ def main():
             "lr" : 0.1,
             "eval_every" : 10
         }
+        print("Created CNN model")
+    elif model_name.lower() == "rnn":
+        model = RNN(n_mfcc=n_mfcc, n_classes=n_classes, hidden_dim=100)
+        hyperparameters = {
+            "optimizer" : torch.optim.Adam,
+            "loss_fnc" : nn.CrossEntropyLoss(),
+            "epochs" : 50,
+            "batch_size" : 64,
+            "lr" : 0.01,
+            "eval_every" : 10
+        }
+        print("Created RNN model")
     else:
         raise ValueError(f"Model '{model_name}' does not exist")
 
-    train_iter, valid_iter, test_iter = load_data(hyperparameters["batch_size"], n_mfcc, audio_length, overfit=False)
+    train_iter, valid_iter, test_iter = load_data(hyperparameters["batch_size"], n_mfcc, audio_length, overfit=True)
     training_loop(model, train_iter, valid_iter, test_iter, **hyperparameters)
 
 if __name__ == "__main__":
