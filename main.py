@@ -115,8 +115,8 @@ def main():
     audio_length = Metadata["audio_length"]
     n_classes = len(Metadata["mapping"])
 
-    #model_name = "mlp"
-    model_name = "average"
+    model_name = "mlp"
+    #model_name = "average"
     #model_name = "cnn"
 
     model = None
@@ -155,7 +155,7 @@ def main():
     else:
         raise ValueError(f"Model '{model_name}' does not exist")
 
-    train_iter, valid_iter, test_iter = load_data(hyperparameters["batch_size"], n_mfcc, audio_length, overfit=True)
+    train_iter, valid_iter, test_iter = load_data(hyperparameters["batch_size"], n_mfcc, audio_length, overfit=False)
     training_loop(model, train_iter, valid_iter, test_iter, **hyperparameters)
 
 if __name__ == "__main__":

@@ -59,8 +59,8 @@ def RAVDESS_reordering():
 
 def RAVDESS_mfcc_conversion(sr=44100, n_mfcc=30, duration=2.5):
     RAV = f"{ROOT}/raw_data/RAVDESS/"
-    df_mfcc = pd.DataFrame(columns=['feature'])
-    df_label = pd.DataFrame(columns=['label'])
+    df_mfcc = pd.DataFrame(columns=["feature"])
+    df_label = pd.DataFrame(columns=["label", "actor"])
 
     dir_list = os.listdir(RAV)
     dir_list.sort() #Female -> Male
@@ -84,13 +84,14 @@ def RAVDESS_mfcc_conversion(sr=44100, n_mfcc=30, duration=2.5):
         n_mfcc, audio_length = MFCC.shape   # (30, 216) for default inputs
 
         # Add mfcc representation of recording as well as its gender and emotion label to panda frames
-        df_mfcc.loc[index] = [MFCC.flatten()]
         gender = RAVDESS_metadata["gender"][int(part[6])%2]
         emotion = RAVDESS_metadata["emotion"][part[2]]
-        df_label.loc[index] = f"{gender.lower()}_{emotion.lower()}"
+        df_mfcc.loc[index] = [ MFCC.flatten() ]
+        df_label.loc[index] = [ f"{gender.lower()}_{emotion.lower()}", part[-1] ]
+        
 
     # need to get rid of the missing values (NA) in the feature column so have to split that up
-    expanded_mfcc = pd.DataFrame(df_mfcc['feature'].values.tolist())
+    expanded_mfcc = pd.DataFrame(df_mfcc["feature"].values.tolist())
     expanded_mfcc = expanded_mfcc.fillna(0)
     
     # Concatenate into a single dataframe
@@ -112,23 +113,23 @@ def split_data(df, n_mfcc, audio_length):
     Mapping = dict(zip( le.classes_, le.transform(le.classes_) ))
     Mapping = {str(Mapping[label]) : label for label in Mapping}
 
+    # Splitting Testing data from rest by actor
+    #   i.e. Actors 1, 2, 3, and 4 go into Testing Data
+    test_actors = df["actor"].isin(['01', '02', '03', '04'])
+    test_data = df.loc[ test_actors ]
+    df = df.drop(df[test_actors].index, axis=0)
+    
     # creating an equal distribution of labels
-    Data_Splits = {"train" : {}, "valid" : {}, "test" : {}}
+    Data_Splits = {"training" : {}, "validation" : {}}
     for int_category in Mapping:
-        train_category_df, test_category_df = train_test_split(  
+        train_category_df, valid_category_df = train_test_split(  
                                                             df.loc[ df["label"] == int(int_category) ], 
                                                             test_size=0.20,
                                                             random_state=SEED
                                                         )
-        train_category_df, valid_category_df = train_test_split(  
-                                                            train_category_df.loc[ train_category_df["label"] == int(int_category) ], 
-                                                            test_size=0.20,
-                                                            random_state=SEED
-                                                        )
 
-        Data_Splits["train"][Mapping[int_category]] = train_category_df
-        Data_Splits["valid"][Mapping[int_category]] = valid_category_df
-        Data_Splits["test"][Mapping[int_category]] = test_category_df
+        Data_Splits["training"][Mapping[int_category]] = train_category_df
+        Data_Splits["validation"][Mapping[int_category]] = valid_category_df
     
     # printing amount of data in each category
     for dataset in Data_Splits:
@@ -139,19 +140,34 @@ def split_data(df, n_mfcc, audio_length):
             print(f"\t{category}:\t\t{curr}")
             total += curr
         print(f"\tTotal: {int(total)}")
+        print()
+    
+    # FIXME: Problem I don't feel like solving
+    """"
+    # had to do it separately for test data
+    print("Test Data")
+    category_counts = test_data["label"].value_counts()
+    print(category_counts)
+    total = 0
+    for category in Mapping.values():
+        curr = category_counts[category]
+        print(f"\t{category}:\t\t{curr}")
+        total += curr
+    print(f"\tTotal: {int(total)}")
+    print()
+    """
     
     # concatinating everything together and separating out labels
-    train_data = pd.concat( Data_Splits["train"].values(), axis=0 )
+    train_data = pd.concat( Data_Splits["training"].values(), axis=0 )
     train_label = train_data["label"]
-    train_data = train_data.drop(["label"], axis=1)
+    train_data = train_data.drop(["label", "actor"], axis=1)
 
-    valid_data = pd.concat( Data_Splits["valid"].values(), axis=0 )
+    valid_data = pd.concat( Data_Splits["validation"].values(), axis=0 )
     valid_label = valid_data["label"]
-    valid_data = valid_data.drop(["label"], axis=1)
+    valid_data = valid_data.drop(["label", "actor"], axis=1)
 
-    test_data = pd.concat( Data_Splits["test"].values(), axis=0 )
     test_label = test_data["label"]
-    test_data = test_data.drop(["label"], axis=1)
+    test_data = test_data.drop(["label", "actor"], axis=1)
 
     # Overfit Data with equal distribution of labels
     overfit_data = pd.DataFrame(columns=df.columns)
@@ -159,7 +175,7 @@ def split_data(df, n_mfcc, audio_length):
         category_df = df.loc[ df["label"] == int(int_category) ].sample(n=10, random_state=SEED)
         overfit_data = pd.concat( (overfit_data, category_df), axis=0 )
     overfit_label = overfit_data["label"]
-    overfit_data = overfit_data.drop(["label"], axis=1)
+    overfit_data = overfit_data.drop(["label", "actor"], axis=1)
 
     # Need to normalize data, normalize other based off of normalization of training data
     mean = np.mean(train_data, axis=0)
