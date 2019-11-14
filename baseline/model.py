@@ -57,6 +57,5 @@ class Average(nn.Module):
         self.fc = nn.Linear(input_size, output_size)
     
     def forward(self, x):
-        print(x.size())
         average = x.mean(1)
         return nn.Softmax(dim=1)(self.fc(average).squeeze())

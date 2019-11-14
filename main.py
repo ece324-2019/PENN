@@ -117,9 +117,9 @@ def main():
     n_classes = len(Metadata["mapping"])
 
     #model_name = "mlp"
-    #model_name = "average"
+    model_name = "average"
     #model_name = "cnn"
-    model_name = "rnn"
+    #model_name = "rnn"
 
     model = None
     hyperparameters = {}
