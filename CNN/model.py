@@ -30,6 +30,14 @@ class CNN(nn.Module):
             nn.ReLU(),
             nn.Dropout(p=0.2)
                             )
+    
+    # calulates output size
+    def _output_size(self, inp_size, kernel_size, stride, padding):
+        h, w = inp_size
+        h_output = int((h - kernel_size + 2*padding) / stride) + 1
+        w_output = int((w - kernel_size + 2*padding) / stride) + 1
+        return h_output, w_output
+
     def forward(self, x):
         batch_size = x.size()[0]
         #shape coming in [batch size, 30*216]
