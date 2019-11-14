@@ -54,8 +54,11 @@ class Average(nn.Module):
         if seed != None:
             torch.manual_seed(seed)
         
-        self.fc = nn.Linear(input_size, output_size)
+        self.fc = nn.Sequential(
+            nn.Linear(input_size, output_size),
+            nn.Softmax(dim=1)
+        )
     
     def forward(self, x):
         average = x.mean(1)
-        return nn.Softmax(dim=1)(self.fc(average).squeeze())
+        return self.fc(average).squeeze()

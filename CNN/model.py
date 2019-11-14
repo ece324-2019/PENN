@@ -11,25 +11,25 @@ class CNN(nn.Module):
         # input is of size (batch_size, 30, 216, 1)
         # applying 32 kernels of size of (4,10)
         self.conv1 = nn.Sequential(
-                            nn.Conv2d(in_channels = 1, out_channels = n_kernels, kernel_size = (4,10)),
-                            nn.BatchNorm2d(n_kernels),
-                            nn.MaxPool2d(kernel_size=(4, 10), stride=(2, 2), padding = (1,4)),
-                            nn.ReLU(),
-                            nn.Dropout(p=0.2)
-                            )
+            nn.Conv2d(in_channels = 1, out_channels = n_kernels, kernel_size = (4,10)),
+            nn.BatchNorm2d(n_kernels),
+            nn.MaxPool2d(kernel_size=(4, 10), stride=(2, 2), padding = (1,4)),
+            nn.ReLU(),
+            nn.Dropout(p=0.2)
+        )
         self.conv2 = nn.Sequential(
             nn.Conv2d(in_channels=n_kernels, out_channels=n_kernels, kernel_size=(4, 10)),
             nn.BatchNorm2d(n_kernels),
             nn.MaxPool2d(kernel_size=(4, 10), stride=(2, 2), padding=(1, 4)),
             nn.ReLU(),
             nn.Dropout(p=0.2)
-                            )
+        )
         self.end = nn.Sequential(
             nn.Dropout(p=0.2),
             nn.BatchNorm2d(n_kernels),
             nn.ReLU(),
             nn.Dropout(p=0.2)
-                            )
+        )
     
     # calulates output size
     def _output_size(self, inp_size, kernel_size, stride, padding):
