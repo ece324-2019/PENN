@@ -1,9 +1,11 @@
 import torch
 import torch.nn as nn
 
-class MLP(nn.Module):
+import librosa
 
-    """ Very simple MLP
+class MLP(nn.Module):
+    """ If only 1 layer, then this is
+        essentially a logistical regression
     """
 
     def __init__(self, input_size, output_size, hidden_layers=[], seed=None):

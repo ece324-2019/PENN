@@ -9,6 +9,9 @@ from utils import *
 
 import torch
 import torch.nn as nn
+from torchsummary import summary
+
+from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
 
 def evaluate(model, data_loader, loss_fnc):
     running_loss = 0.0
@@ -156,7 +159,7 @@ def main():
             "loss_fnc" : nn.CrossEntropyLoss(),
             "epochs" : args.epochs,
             "batch_size" : args.batch_size,
-            "lr" : 0.1,
+            "lr" : 0.01,
             "eval_every" : 10
         }
         print("Created CNN model")
@@ -167,7 +170,7 @@ def main():
             "loss_fnc" : nn.CrossEntropyLoss(),
             "epochs" : args.epochs,
             "batch_size" : args.batch_size,
-            "lr" : 0.01,
+            "lr" : 0.1,
             "eval_every" : 10
         }
         print("Created RNN model")
@@ -184,6 +187,36 @@ def main():
                     save=args.save, 
                     **hyperparameters
                 )
+
+    # summary statistics
+    print("Model Summary:")
+    #summary(model, input_size=(1, n_mfcc, audio_length))
+    print()
+    print()
+    
+    predictions = torch.Tensor()
+    labels = torch.Tensor()
+
+    for batch, batch_labels in test_iter:
+        batch_predictions = model(batch.float())
+        batch_predictions = torch.argmax(batch_predictions, dim=1)
+
+        predictions = torch.cat( (predictions, batch_predictions.float()), dim=0 )
+        labels = torch.cat( (labels, batch_labels.float()), dim=0 )
+    
+    predictions = predictions.detach().numpy().astype(int)
+    labels = labels.detach().numpy().astype(int)
+    results = confusion_matrix(labels, predictions) 
+    print('Confusion Matrix :')
+    print(results) 
+    print('Accuracy Score :', accuracy_score(labels, predictions))
+    print()
+    print()
+    print('Report : ')
+    print(classification_report(labels, predictions))
+
+    # plotting confusion matrix nicer
+    plot_confusion_matrix(confusion_matrix, list(Metadata["mapping"].values()))
 
 if __name__ == "__main__":
     main()

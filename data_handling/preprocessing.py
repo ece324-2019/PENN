@@ -72,12 +72,16 @@ def RAVDESS_mfcc_conversion(sr=44100, n_mfcc=30, duration=2.5):
     fname_list.sort()
     audio_length = 0
     # loop through all files
-    for index, f in enumerate(fname_list):    
+    cnt = 0
+    for f in fname_list:    
         
         # get the file name, part is a list with the important info of each file
         file = os.path.join(RAV, f)
         part = f.split('.')[0].split('-')
         
+        if part[3] == '01':
+            continue
+
         # Convert .wav file to a integer array using Librosa
         data, _ = librosa.load(file, res_type='kaiser_fast', sr=sr, duration=duration)
         MFCC = librosa.feature.mfcc(data, sr=sr, n_mfcc=n_mfcc)
@@ -86,9 +90,11 @@ def RAVDESS_mfcc_conversion(sr=44100, n_mfcc=30, duration=2.5):
         # Add mfcc representation of recording as well as its gender and emotion label to panda frames
         gender = RAVDESS_metadata["gender"][int(part[6])%2]
         emotion = RAVDESS_metadata["emotion"][part[2]]
-        df_mfcc.loc[index] = [ MFCC.flatten() ]
-        df_label.loc[index] = [ f"{gender.lower()}_{emotion.lower()}", part[-1] ]
+        df_mfcc.loc[cnt] = [ MFCC.flatten() ]
+        df_label.loc[cnt] = [ f"{gender.lower()}_{emotion.lower()}", part[-1] ]
+        cnt += 1
         
+    print("Loaded data into dataframe")
 
     # need to get rid of the missing values (NA) in the feature column so have to split that up
     expanded_mfcc = pd.DataFrame(df_mfcc["feature"].values.tolist())
@@ -96,6 +102,7 @@ def RAVDESS_mfcc_conversion(sr=44100, n_mfcc=30, duration=2.5):
     
     # Concatenate into a single dataframe
     df = pd.concat([df_label, expanded_mfcc], axis=1)
+    print(df)
 
     return df, n_mfcc, audio_length
 

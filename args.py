@@ -4,7 +4,7 @@ def get_args():
     # Command Line Arguments
     parser = argparse.ArgumentParser(description='Terminal Arguments for PENN')
     
-    parser.add_argument('--model', type=str, choices=["mlp", "avg", "cnn", "rnn"], default="cnn")
+    parser.add_argument('--model', type=str, choices=["mlp", "average", "cnn", "rnn"], default="cnn")
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--epochs', type=int, default=100)

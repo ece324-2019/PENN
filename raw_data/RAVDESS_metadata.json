@@ -18,6 +18,16 @@
         "07": "disgust", 
         "08": "surprised"
     },
+    "_emotion" : {
+        "01": "neutral", 
+        "02": "neutral", 
+        "03": "positive", 
+        "04": "negative",
+        "05": "negative", 
+        "06": "negative",
+        "07": "negative", 
+        "08": "positive"
+    },
     "intensity": {
         "01": "normal", 
         "02": "strong"
