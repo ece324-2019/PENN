@@ -4,6 +4,9 @@ import os
 import shutil
 import json
 
+# TODO: currently the audio files have a fixed duration of 2.5 seconds, and this comes from the RAVDESS dataset
+# However, the length of time for the SAVEE dataset might be different. We need to look into this
+
 class SAVEE_Preprocessor(Preprocessor):
 
     name = "SAVEE_Preprocessor"
@@ -21,7 +24,7 @@ class SAVEE_Preprocessor(Preprocessor):
         metadata_path = os.path.join(self.ROOT, "raw_data", metadata_file)
         self.Metadata = json.load(open(metadata_path, "r"))
     
-    def reordering(self):    
+    def rearrange(self):    
         dir_list = self.create_new_data_directory()
 
         for actor in dir_list: #for loops through the actor
@@ -49,7 +52,7 @@ class SAVEE_Preprocessor(Preprocessor):
 if __name__ == "__main__":
     
     SAVEE = SAVEE_Preprocessor(seed=100)
-    #SAVEE.reordering()
+    #SAVEE.rearrange()
     df, n_mfcc, audio_length = SAVEE.mfcc_conversion()
     le = SAVEE.split_data(df, n_mfcc, audio_length, append=False)
     

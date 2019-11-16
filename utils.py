@@ -83,11 +83,3 @@ def wav_to_mp3(path_to_wav):
 
 if __name__ == "__main__":
     wav_to_mp3("./raw_data/RAVDESS/03-01-08-02-01-01-01.wav")
-
-    """
-    RAVDESS = RAVDESS_Preprocessor(seed=100)
-    SAVEE = SAVEE_Preprocessor(seed=100)
-    #process_datasets(RAVDESS, SAVEE)
-    df, n_mfcc, audio_length = SAVEE.mfcc_conversion()
-    le = SAVEE.split_data(df, n_mfcc, audio_length, le=None, append=False)
-    """

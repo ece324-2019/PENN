@@ -236,3 +236,13 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
+    """ data preprocessing 
+    RAVDESS = RAVDESS_Preprocessor(seed=100)
+    SAVEE = SAVEE_Preprocessor(seed=100)
+    #RAVDESS.rearrange()
+    #SAVEE.rearrange()
+    process_datasets(RAVDESS, SAVEE)
+    #df, n_mfcc, audio_length = SAVEE.mfcc_conversion()
+    #le = SAVEE.split_data(df, n_mfcc, audio_length, le=None, append=False)
+    """

@@ -21,7 +21,7 @@ class RAVDESS_Preprocessor(Preprocessor):
         metadata_path = os.path.join(self.ROOT, "raw_data", metadata_file)
         self.Metadata = json.load(open(metadata_path, "r"))
     
-    def reordering(self):    
+    def rearrange(self):    
         dir_list = self.create_new_data_directory()
 
         for actor in dir_list: #for loops through the actor
@@ -49,6 +49,6 @@ class RAVDESS_Preprocessor(Preprocessor):
 if __name__ == "__main__":
     
     RAVDESS = RAVDESS_Preprocessor(seed=100)
-    #RAVDESS.reordering()
+    #RAVDESS.rearrange()
     df, n_mfcc, audio_length = RAVDESS.mfcc_conversion()
     le = RAVDESS.split_data(df, n_mfcc, audio_length, append=False)

@@ -23,7 +23,7 @@ class Preprocessor(object):
         self.ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.seed = seed
 
-    def reordering(self):
+    def rearrange(self):
         raise NotImplementedError("")
 
     def parse_file_name(self, f_name):
@@ -130,7 +130,12 @@ class Preprocessor(object):
             le = LabelEncoder()
             df["label"] = le.fit_transform( df["label"] )
         else:
-            df["label"] = le.transform( df["label"] )     # check
+            df["label"] = le.transform( df["label"] )
+
+        # getting list of unique labels in dataframe
+        # since we are using multiple datasets, there might be labels in the label encoder 
+        # that are not in the current dataset
+        Labels = list(sorted(df["label"].unique()))
 
         # Getting Mapping in order to reconstruct label from encoding
         # This will be saved to a json file `Metadata.json` later
@@ -145,15 +150,16 @@ class Preprocessor(object):
         
         # creating an equal distribution of labels
         Data_Splits = {"training" : {}, "validation" : {}}
-        for int_category in Mapping:
+        for int_category in Labels:
+
             train_category_df, valid_category_df = train_test_split(  
                                                                 df.loc[ df["label"] == int(int_category) ], 
                                                                 test_size=0.20,
                                                                 random_state=self.seed
                                                             )
 
-            Data_Splits["training"][Mapping[int_category]] = train_category_df
-            Data_Splits["validation"][Mapping[int_category]] = valid_category_df
+            Data_Splits["training"][Mapping[str(int_category)]] = train_category_df
+            Data_Splits["validation"][Mapping[str(int_category)]] = valid_category_df
         
         # printing amount of data in each category
         for dataset in Data_Splits:
@@ -170,9 +176,9 @@ class Preprocessor(object):
         print("Test Data")
         category_counts = test_data["label"].value_counts()
         total = 0
-        for category_int in Mapping:
+        for category_int in Labels:
             curr = category_counts[int(category_int)]
-            print(f"\t{Mapping[category_int]:20s} {curr}")
+            print(f"\t{Mapping[str(category_int)]:20s} {curr}")
             total += curr
         print(f"Total: {int(total)}")
         print()
@@ -191,7 +197,7 @@ class Preprocessor(object):
 
         # Overfit Data with equal distribution of labels
         overfit_data = pd.DataFrame(columns=df.columns)
-        for int_category in Mapping:
+        for int_category in Labels:
             category_df = df.loc[ df["label"] == int(int_category) ].sample(n=10, random_state=self.seed)
             overfit_data = pd.concat( (overfit_data, category_df), axis=0 )
         overfit_label = overfit_data["label"]
@@ -220,15 +226,16 @@ class Preprocessor(object):
 
         # Saving to tsv
         mode = 'a' if append else 'w'       # a = append, w = overwrite
+        header = False if append else True
 
-        train_data.to_csv(path_or_buf=f"{self.ROOT}/data/train_data.tsv", sep='\t', mode=mode, index=True, header=True)
-        train_label.to_csv(path_or_buf=f"{self.ROOT}/data/train_label.tsv", sep='\t', mode=mode, index=True, header=True)
-        valid_data.to_csv(path_or_buf=f"{self.ROOT}/data/valid_data.tsv", sep='\t', mode=mode, index=True, header=True)
-        valid_label.to_csv(path_or_buf=f"{self.ROOT}/data/valid_label.tsv", sep='\t', mode=mode, index=True, header=True)
-        test_data.to_csv(path_or_buf=f"{self.ROOT}/data/test_data.tsv", sep='\t', mode=mode, index=True, header=True)
-        test_label.to_csv(path_or_buf=f"{self.ROOT}/data/test_label.tsv", sep='\t', mode=mode, index=True, header=True)
-        overfit_data.to_csv(path_or_buf=f"{self.ROOT}/data/overfit_data.tsv", sep='\t', mode=mode, index=True, header=True)
-        overfit_label.to_csv(path_or_buf=f"{self.ROOT}/data/overfit_label.tsv", sep='\t', mode=mode, index=True, header=True)
+        train_data.to_csv(path_or_buf=f"{self.ROOT}/data/train_data.tsv", sep='\t', mode=mode, index=True, header=header)
+        train_label.to_csv(path_or_buf=f"{self.ROOT}/data/train_label.tsv", sep='\t', mode=mode, index=True, header=header)
+        valid_data.to_csv(path_or_buf=f"{self.ROOT}/data/valid_data.tsv", sep='\t', mode=mode, index=True, header=header)
+        valid_label.to_csv(path_or_buf=f"{self.ROOT}/data/valid_label.tsv", sep='\t', mode=mode, index=True, header=header)
+        test_data.to_csv(path_or_buf=f"{self.ROOT}/data/test_data.tsv", sep='\t', mode=mode, index=True, header=header)
+        test_label.to_csv(path_or_buf=f"{self.ROOT}/data/test_label.tsv", sep='\t', mode=mode, index=True, header=header)
+        overfit_data.to_csv(path_or_buf=f"{self.ROOT}/data/overfit_data.tsv", sep='\t', mode=mode, index=True, header=header)
+        overfit_label.to_csv(path_or_buf=f"{self.ROOT}/data/overfit_label.tsv", sep='\t', mode=mode, index=True, header=header)
 
         # saving relavent metadata
         Metadata = {}
