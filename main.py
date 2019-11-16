@@ -5,6 +5,8 @@ from RNN.model import RNN
 from args import get_args
 
 from data_handling.load_data import *
+from data_handling.RAVDESS_preprocessor import RAVDESS_Preprocessor
+from data_handling.SAVEE_preprocessor import SAVEE_Preprocessor
 from utils import *
 
 import torch
@@ -12,6 +14,18 @@ import torch.nn as nn
 from torchsummary import summary
 
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
+
+import json
+
+def process_datasets(*dataset_processors):
+    le = None
+    append = False
+    for DATASET in dataset_processors:
+        print("Processing", DATASET.dataset)
+        df, n_mfcc, audio_length = DATASET.mfcc_conversion()
+        le = DATASET.split_data(df, n_mfcc, audio_length, le=le, append=append)
+        append = True
+        print(n_mfcc, audio_length)
 
 def evaluate(model, data_loader, loss_fnc):
     running_loss = 0.0
@@ -159,7 +173,7 @@ def main():
             "loss_fnc" : nn.CrossEntropyLoss(),
             "epochs" : args.epochs,
             "batch_size" : args.batch_size,
-            "lr" : 0.01,
+            "lr" : 0.001,
             "eval_every" : 10
         }
         print("Created CNN model")
@@ -170,7 +184,7 @@ def main():
             "loss_fnc" : nn.CrossEntropyLoss(),
             "epochs" : args.epochs,
             "batch_size" : args.batch_size,
-            "lr" : 0.1,
+            "lr" : 0.01,
             "eval_every" : 10
         }
         print("Created RNN model")
@@ -209,14 +223,16 @@ def main():
     results = confusion_matrix(labels, predictions) 
     print('Confusion Matrix :')
     print(results) 
+    """
     print('Accuracy Score :', accuracy_score(labels, predictions))
     print()
     print()
     print('Report : ')
     print(classification_report(labels, predictions))
+    """
 
     # plotting confusion matrix nicer
-    plot_confusion_matrix(confusion_matrix, list(Metadata["mapping"].values()))
+    plot_confusion_matrix(results, list(Metadata["mapping"].values()))
 
 if __name__ == "__main__":
     main()

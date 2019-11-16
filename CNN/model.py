@@ -8,17 +8,17 @@ class CNN(nn.Module):
         super(CNN, self).__init__()
         # In n_classes we can group up Calm and Neutral to get 14 instead of 16 labels
         self.conv1 = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=n_kernels, kernel_size=(n_mfcc,10), stride=1, padding=0),
+            nn.Conv2d(in_channels=1, out_channels=n_kernels, kernel_size=(n_mfcc, 10), stride=1, padding=0),
             nn.ReLU(),
             nn.Dropout(p=0.2)
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=n_kernels, kernel_size=(n_mfcc, 50), stride=1, padding=0),
+            nn.Conv2d(in_channels=n_kernels, out_channels=2*n_kernels, kernel_size=(1, 10), stride=1, padding=0),
             nn.ReLU(),
             nn.Dropout(p=0.2)
         )
         self.fc = nn.Sequential(
-            nn.Linear(n_kernels, 16),
+            nn.Linear(n_kernels, n_classes),
             nn.Softmax(dim=1)
         )
         
@@ -35,12 +35,12 @@ class CNN(nn.Module):
         
         conv1_output = self.conv1(x)
         pool1 = nn.MaxPool2d(kernel_size=(1, conv1_output.size(3)), stride=1, padding=0)
-        conv1_output = pool1(conv1_output).squeeze()
+        conv1_output = pool1(conv1_output)
         
-        #conv2_output = self.conv1(x)
+        #conv2_output = self.conv1(conv1_output)
         #pool2 = nn.MaxPool2d(kernel_size=(1, conv2_output.size(3)), stride=1, padding=0)
         #conv2_output = pool2(conv2_output).squeeze()
         
         #output = torch.cat((conv1_output, conv2_output), 1)
 
-        return self.fc(conv1_output)
+        return self.fc(conv1_output.squeeze())

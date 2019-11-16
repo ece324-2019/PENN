@@ -42,12 +42,12 @@ def plot_accuracy(x, train_accuracy=None, valid_accuracy=None, title=None):
     plt.show()
     plt.clf()
 
-def plot_confusion_matrix(confusion_matrix, class_names, figsize = (10,7), fontsize=14):
-    '''Prints a confusion matrix, as returned by sklearn.metrics.confusion_matrix, as a heatmap.
+def plot_confusion_matrix(confusion_matrix, class_names, title=None, figsize=(10,7), fontsize=14):
+    """ Prints a confusion matrix, as returned by `sklearn.metrics.confusion_matrix`, as a heatmap.
     Arguments
     ---------
-    confusion_matrix: numpy.ndarray
-        The numpy.ndarray object returned from a call to sklearn.metrics.confusion_matrix.
+    confusion_matrix: `numpy.ndarray`
+        The numpy.ndarray object returned from a call to `sklearn.metrics.confusion_matrix`.
         Similarly constructed ndarrays can also be used.
     class_names: list
         An ordered list of class names, in the order they index the given confusion matrix.
@@ -58,12 +58,10 @@ def plot_confusion_matrix(confusion_matrix, class_names, figsize = (10,7), fonts
         Font size for axes labels. Defaults to 14.
     Returns
     -------
-    matplotlib.figure.Figure
+   `matplotlib.figure.Figure`
         The resulting confusion matrix figure
-    '''
-    df_cm = pd.DataFrame(
-        confusion_matrix, index=class_names, columns=class_names,
-    )
+    """
+    df_cm = pd.DataFrame( confusion_matrix, index=class_names, columns=class_names )
     fig = plt.figure(figsize=figsize)
     try:
         heatmap = sns.heatmap(df_cm, annot=True, fmt="d")
@@ -74,6 +72,8 @@ def plot_confusion_matrix(confusion_matrix, class_names, figsize = (10,7), fonts
     heatmap.xaxis.set_ticklabels(heatmap.xaxis.get_ticklabels(), rotation=45, ha='right', fontsize=fontsize)
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+    if title != None:
+        plt.title(title)
 
     plt.show()
 
@@ -83,3 +83,11 @@ def wav_to_mp3(path_to_wav):
 
 if __name__ == "__main__":
     wav_to_mp3("./raw_data/RAVDESS/03-01-08-02-01-01-01.wav")
+
+    """
+    RAVDESS = RAVDESS_Preprocessor(seed=100)
+    SAVEE = SAVEE_Preprocessor(seed=100)
+    #process_datasets(RAVDESS, SAVEE)
+    df, n_mfcc, audio_length = SAVEE.mfcc_conversion()
+    le = SAVEE.split_data(df, n_mfcc, audio_length, le=None, append=False)
+    """

@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 
 import json
 import os
