@@ -151,8 +151,8 @@ def main():
             "loss_fnc" : nn.CrossEntropyLoss(),
             "epochs" : args.epochs,
             "batch_size" : args.batch_size,
-            "lr" : 0.001,
-            "eval_every" : 10
+            "lr" : 0.001 if args.lr == -1 else args.lr,
+            "eval_every" : 10 if args.eval_every == -1 else args.eval_every
         }
         print("Created MLP baseline model")
     elif model_name.lower() == "average":
@@ -162,8 +162,8 @@ def main():
             "loss_fnc" : nn.CrossEntropyLoss(),
             "epochs" : args.epochs,
             "batch_size" : args.batch_size,
-            "lr" : 0.1,
-            "eval_every" : 10
+            "lr" : 0.1 if args.lr == -1 else args.lr,
+            "eval_every" : 10 if args.eval_every == -1 else args.eval_every
         }
         print("Created Averaging CNN baseline model")
     elif model_name.lower() == "cnn":
@@ -173,8 +173,8 @@ def main():
             "loss_fnc" : nn.CrossEntropyLoss(),
             "epochs" : args.epochs,
             "batch_size" : args.batch_size,
-            "lr" : 0.001,
-            "eval_every" : 10
+            "lr" : 0.001 if args.lr == -1 else args.lr,
+            "eval_every" : 10 if args.eval_every == -1 else args.eval_every
         }
         print("Created CNN model")
     elif model_name.lower() == "rnn":
@@ -184,8 +184,8 @@ def main():
             "loss_fnc" : nn.CrossEntropyLoss(),
             "epochs" : args.epochs,
             "batch_size" : args.batch_size,
-            "lr" : 0.01,
-            "eval_every" : 10
+            "lr" : 0.01 if args.lr == -1 else args.lr,
+            "eval_every" : 10 if args.eval_every == -1 else args.eval_every
         }
         print("Created RNN model")
     else:
