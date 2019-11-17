@@ -1,6 +1,13 @@
+# Manipulate audio
+import librosa
 from pydub import AudioSegment
+
+# Manipulate data
 import pandas as pd
 import numpy as np
+
+# Manipulate plots
+import librosa.display
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -77,9 +84,36 @@ def plot_confusion_matrix(confusion_matrix, class_names, title=None, figsize=(10
 
     plt.show()
 
-def wav_to_mp3(path_to_wav):
-    clip = AudioSegment.from_wav(path_to_wav)
+def plot_waveform(audio_file_path):
+    
+    data_array, _ = librosa.load(audio_file_path, res_type='kaiser_fast', sr=44100, duration=2.5)
+    
+    fig = plt.figure(figsize=(14, 8))
+    file_name = audio_file_path.split("/")[-1]
+    plt.title(f"Waveform: {file_name}")
+    plt.xlabel('time')
+    plt.ylabel("Amplitude")
+    plt.plot(np.linspace(0, 1, len(data_array)), data_array)
+    plt.show()
+
+def plot_MFCC(audio_file_path):
+    data_array, _ = librosa.load(audio_file_path, res_type='kaiser_fast', sr=44100, duration=2.5)
+    MFCC = librosa.feature.mfcc(data_array, sr=44100, n_mfcc=100)
+    MFCC = np.nan_to_num(MFCC)
+    
+    librosa.display.specshow(MFCC, x_axis='time')
+    plt.colorbar()
+    plt.title("MFCC")
+    plt.tight_layout()
+    plt.show()
+
+def wav_to_mp3(audio_file_path):
+    clip = AudioSegment.from_wav(audio_file_path)
     clip.export("test.mp3", format="mp3")
 
 if __name__ == "__main__":
-    wav_to_mp3("./raw_data/RAVDESS/03-01-08-02-01-01-01.wav")
+    
+    audio_file_path = "./raw_data/RAVDESS/03-01-08-02-01-01-01.wav"
+    #plot_waveform(audio_file_path)
+    plot_MFCC(audio_file_path)
+    #wav_to_mp3(audio_file_path)
