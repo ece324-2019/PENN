@@ -87,13 +87,15 @@ def plot_confusion_matrix(confusion_matrix, class_names, title=None, figsize=(10
 def plot_waveform(audio_file_path):
     
     data_array, _ = librosa.load(audio_file_path, res_type='kaiser_fast', sr=44100, duration=2.5)
-    
+    audio = AudioSegment.from_wav(audio_file_path)
+    audio_length = len(audio) / 1000
+
     fig = plt.figure(figsize=(14, 8))
     file_name = audio_file_path.split("/")[-1]
     plt.title(f"Waveform: {file_name}")
     plt.xlabel('time')
     plt.ylabel("Amplitude")
-    plt.plot(np.linspace(0, 1, len(data_array)), data_array)
+    plt.plot(np.linspace(0, audio_length, len(data_array)), data_array)
     plt.show()
 
 def plot_MFCC(audio_file_path):
@@ -111,9 +113,35 @@ def wav_to_mp3(audio_file_path):
     clip = AudioSegment.from_wav(audio_file_path)
     clip.export("test.mp3", format="mp3")
 
+# We did not write this. Obtained from https://stackoverflow.com/questions/38231328/measure-length-of-silence-at-beginning-of-audio-file-wav
+def get_silence(audio, threshold=-80, interval=1):
+    "get length of silence in seconds from a wav file"
+
+    # swap out pydub import for other types of audio
+    song = AudioSegment.from_wav(audio)
+
+    # break into chunks
+    chunks = [song[i:i+interval] for i in range(0, len(song), interval)]
+
+    # find number of chunks with dBFS below threshold
+    silent_blocks = 0
+    for c in chunks:
+        if c.dBFS == float('-inf') or c.dBFS < threshold:
+            silent_blocks += 1
+        else:
+            break
+
+    # convert blocks into seconds
+    return round(silent_blocks * (interval/1000), 3)
+
 if __name__ == "__main__":
     
-    audio_file_path = "./raw_data/RAVDESS/03-01-08-02-01-01-01.wav"
-    #plot_waveform(audio_file_path)
-    plot_MFCC(audio_file_path)
+    audio_file_path = "./raw_data/SAVEE/DC-a-08.wav"
+    #audio_file_path = "./raw_data/RAVDESS/03-01-01-01-01-01-01.wav"
+    print(get_silence(audio_file_path, threshold=0))
+    plot_waveform(audio_file_path)
+    #plot_MFCC(audio_file_path)
+    audio = AudioSegment.from_wav(audio_file_path)
+    print(len(audio) / 1000)
     #wav_to_mp3(audio_file_path)
+    

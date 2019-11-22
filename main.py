@@ -243,11 +243,19 @@ if __name__ == "__main__":
     args = get_args()
     
     if args.preprocess:
-        
+        """
         RAVDESS = RAVDESS_Preprocessor(seed=100)
+        #RAVDESS.rearrange()
         df, n_mfcc, audio_length = RAVDESS.mfcc_conversion()
         df = RAVDESS.augment(df)
         RAVDESS.split_data(df, n_mfcc, le=None, append=False)
+        """
+
+        SAVEE = SAVEE_Preprocessor(seed=100)
+        #SAVEE.rearrange()
+        df, n_mfcc, audio_length = SAVEE.mfcc_conversion()
+        df = SAVEE.augment(df)
+        SAVEE.split_data(df, n_mfcc, le=None, append=False)
 
         """ data preprocessing 
         RAVDESS = RAVDESS_Preprocessor(seed=100)
