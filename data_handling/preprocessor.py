@@ -19,9 +19,10 @@ class Preprocessor(object):
 
     extra = ['.DS_Store']
 
-    def __init__(self, seed=None):
+    def __init__(self, seed=None, mfcc=30):
         self.ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.seed = seed
+        self.n_mfcc = n_mfcc
 
     def rearrange(self):
         raise NotImplementedError("")
@@ -81,7 +82,7 @@ class Preprocessor(object):
         
         print("Creating Dataframes")
         df_mfcc = pd.DataFrame(columns=["feature"])
-        df_label = pd.DataFrame(columns=["label", "actor"])
+        df_label = pd.DataFrame(columns=["label", "actor", "length"])
 
         # generate list of all files within an emotion in order
         fname_list = os.listdir(self.path)
@@ -108,7 +109,7 @@ class Preprocessor(object):
 
             # Add mfcc representation of recording as well as its gender and emotion label to panda frames
             df_mfcc.loc[cnt] = [ MFCC.flatten() ]
-            df_label.loc[cnt] = [ f"{gender.lower()}_{emotion.lower()}", actor ]
+            df_label.loc[cnt] = [ f"{gender.lower()}_{emotion.lower()}", actor, audio_length ]
             cnt += 1
             
         print("Loaded data into dataframe\n")
@@ -168,17 +169,23 @@ class Preprocessor(object):
         for data, f, name in zip(Data, Aug_functions, Name):
             
             # extracting labels and actors
-            labels, actors = data["label"].to_numpy(), data["actor"].to_numpy()
-            np_data = data.drop(["label", "actor"], axis=1).to_numpy(dtype=np.float32)
+            labels = data["label"].to_numpy()
+            actors = data["actor"].to_numpy()
+            audio_lengths = data["length"].to_numpy()
+            np_data = data.drop(["label", "actor", "length"], axis=1).to_numpy(dtype=np.float32)
             
             # looping through each sample
-            for np_sample, label, actor in zip(np_data, labels, actors):
-                # contatinating augmented results with corresponding label and actor to original dataframe
-                np_aug_df = pd.DataFrame([ f(np_sample) ]) # creates a dataframe with one row
-                np_aug_df = pd.concat( [pd.DataFrame({"label" : [label], "actor" : [actor]}), np_aug_df], axis=1 )
-                df = pd.concat( [df, np_aug_df], ignore_index=True )
-            print(f"{name.title()} augmentation complete")
+            for np_sample, label, actor, audio_length in zip(np_data, labels, actors, audio_lengths):
 
+                df_label = pd.DataFrame({"label" : [label], "actor" : [actor], "length" : [audio_length]})
+                df_aug_data = pd.DataFrame( [f(np_sample)] ) # creates a dataframe with one row
+                
+                # concatinating augmented results with corresponding labels to original dataframe
+                df_aug_data = pd.concat( [df_label, df_aug_data], axis=1 )
+                df = pd.concat( [df, df_aug_data], ignore_index=True )
+            
+            print(f"{name.title()} augmentation complete")
+        print()
         return df
 
     """ Making datasets """
@@ -250,23 +257,23 @@ class Preprocessor(object):
         
         # concatinating everything together and separating out labels
         train_data = pd.concat( Data_Splits["training"].values(), axis=0 )
-        train_label = train_data["label"]
-        train_data = train_data.drop(["label", "actor"], axis=1)
+        train_label = train_data[["label", "length"]]
+        train_data = train_data.drop(["label", "actor", "length"], axis=1)
 
         valid_data = pd.concat( Data_Splits["validation"].values(), axis=0 )
-        valid_label = valid_data["label"]
-        valid_data = valid_data.drop(["label", "actor"], axis=1)
+        valid_label = valid_data[["label", "length"]]
+        valid_data = valid_data.drop(["label", "actor", "length"], axis=1)
 
-        test_label = test_data["label"]
-        test_data = test_data.drop(["label", "actor"], axis=1)
+        test_label = test_data[["label", "length"]]
+        test_data = test_data.drop(["label", "actor", "length"], axis=1)
 
         # Overfit Data with equal distribution of labels
         overfit_data = pd.DataFrame(columns=df.columns)
         for int_category in Labels:
             category_df = df.loc[ df["label"] == int(int_category) ].sample(n=10, random_state=self.seed)
             overfit_data = pd.concat( (overfit_data, category_df), axis=0 )
-        overfit_label = overfit_data["label"]
-        overfit_data = overfit_data.drop(["label", "actor"], axis=1)
+        overfit_label = overfit_data[["label", "length"]]
+        overfit_data = overfit_data.drop(["label", "actor", "length"], axis=1)
 
         # Need to normalize data, normalize other based off of normalization of training data
         mean = np.mean(train_data, axis=0)
@@ -307,9 +314,11 @@ class Preprocessor(object):
         if append:
             pass
         else:
-            Metadata = {"mapping" : Mapping, "n_mfcc" : n_mfcc, "audio_length" : audio_length, "mean" : mean, "std" : std}
+            Metadata = {"mapping" : Mapping, "n_mfcc" : n_mfcc, "mean" : mean, "std" : std}
             with open(f"{self.ROOT}/data/Metadata.json", "w+") as g:
                 json.dump(Metadata, g, indent=4)
         
+        print(f"{self.dataset} processing complete")
+        print()
         return le
     

@@ -9,6 +9,7 @@ class RAVDESS_Preprocessor(Preprocessor):
     name = "RAVDESS_Preprocessor"
     dataset = "RAVDESS"
     sample_rate = 44100
+    duration = 2.5
 
     def __init__(self, raw_data_dir="ravdess-emotional-speech-audio", data_dir="RAVDESS", metadata_file="RAVDESS_metadata.json", seed=None):
         Preprocessor.__init__(self, seed=seed)

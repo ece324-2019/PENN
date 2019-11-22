@@ -38,27 +38,28 @@ def one_hot_encode(df_label):
 
     return tensor_labels_onehot
 
-def load_data(batch_size, n_mfcc, audio_length, overfit=False):
+def load_data(batch_size, n_mfcc, overfit=False):
 
     train_data, train_label, valid_data, valid_label, test_data, test_label = get_data(overfit=overfit)
 
-    print(train_data.shape)
-
-    train_data = torch.from_numpy( train_data.to_numpy(dtype=np.float32) ).reshape(-1, n_mfcc, audio_length)
     train_label = torch.from_numpy( train_label.to_numpy(dtype=int) ).squeeze()
+    train_label, train_length = train_label[:, 0], train_label[:, 1]
     #train_label = one_hot_encode(train_label)
+    train_data = torch.from_numpy( train_data.to_numpy(dtype=np.float32) ).reshape(-1, n_mfcc, max(train_length))
     
-    valid_data = torch.from_numpy( valid_data.to_numpy(dtype=np.float32) ).reshape(-1, n_mfcc, audio_length)
     valid_label = torch.from_numpy( valid_label.to_numpy(dtype=int) ).squeeze()
+    valid_label, valid_length = valid_label[:, 0], valid_label[:, 1]
     #valid_label = one_hot_encode(valid_label)
+    valid_data = torch.from_numpy( valid_data.to_numpy(dtype=np.float32) ).reshape(-1, n_mfcc, max(valid_length))
 
-    test_data = torch.from_numpy( test_data.to_numpy(dtype=np.float32) ).reshape(-1, n_mfcc, audio_length)
     test_label = torch.from_numpy( test_label.to_numpy(dtype=int) ).squeeze()
+    test_label, test_length = test_label[:, 0], test_label[:, 1]
     #test_label = one_hot_encode(test_label)
+    test_data = torch.from_numpy( test_data.to_numpy(dtype=np.float32) ).reshape(-1, n_mfcc, max(test_length))
     
-    train_iter = DataLoader(TensorDataset(train_data, train_label), batch_size=batch_size, shuffle=True)
-    valid_iter = DataLoader(TensorDataset(valid_data, valid_label), batch_size=batch_size)
-    test_iter = DataLoader(TensorDataset(test_data, test_label), batch_size=batch_size)
+    train_iter = DataLoader(TensorDataset(train_data, train_label, train_length), batch_size=batch_size, shuffle=True)
+    valid_iter = DataLoader(TensorDataset(valid_data, valid_label, valid_length), batch_size=batch_size)
+    test_iter = DataLoader(TensorDataset(test_data, test_label, test_length), batch_size=batch_size)
 
     return train_iter, valid_iter, test_iter
 
