@@ -18,8 +18,7 @@ class CNN(nn.Module):
             nn.Dropout(p=0.2)
         )
         self.fc = nn.Sequential(
-            nn.Linear(n_kernels, n_classes),
-            nn.Softmax(dim=1)
+            nn.Linear(n_kernels, n_classes)
         )
         
     

@@ -5,6 +5,15 @@
         "JK",
         "KL"
     ],
+    "_emotion": {
+        "a": "strong",
+        "d": "weak",
+        "f": "weak",
+        "h": "strong",
+        "n": "neutral",
+        "sa": "weak",
+        "su": "strong"
+    },
     "emotion": {
         "a": "angry",
         "d": "disgust",
@@ -14,5 +23,7 @@
         "sa": "sad",
         "su": "surprised"
     },
-    "gender": "Male"
+    "gender": "Male",
+    "sample rate": 44100,
+    "duration": 2.5
 }

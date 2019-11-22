@@ -18,15 +18,13 @@ class MLP(nn.Module):
         # Creating MLP
         if len(hidden_layers) == 0:
             self.mlp = nn.Sequential(
-                nn.Linear(input_size, output_size),
-                nn.Softmax(dim=1)
+                nn.Linear(input_size, output_size)
             )
         elif len(hidden_layers) == 1:
             self.mlp = nn.Sequential(
                 nn.Linear(input_size, hidden_layers[0]),
                 nn.ReLU(),
-                nn.Linear(hidden_layers[-1], output_size),
-                nn.Softmax(dim=1)
+                nn.Linear(hidden_layers[-1], output_size)
             )
         else:
             Hidden = []
@@ -38,8 +36,7 @@ class MLP(nn.Module):
                 nn.Linear(input_size, hidden_layers[0]),
                 nn.ReLU(),
                 *Hidden,
-                nn.Linear(hidden_layers[-1], output_size),
-                nn.Softmax(dim=1)
+                nn.Linear(hidden_layers[-1], output_size)
             )
         
         #print(self.mlp)

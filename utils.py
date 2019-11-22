@@ -77,6 +77,7 @@ def plot_confusion_matrix(confusion_matrix, class_names, title=None, figsize=(10
 
     heatmap.yaxis.set_ticklabels(heatmap.yaxis.get_ticklabels(), rotation=0, ha='right', fontsize=fontsize)
     heatmap.xaxis.set_ticklabels(heatmap.xaxis.get_ticklabels(), rotation=45, ha='right', fontsize=fontsize)
+    plt.subplots_adjust(left=0.27, bottom=0.25, right=0.97, top=0.95)
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     if title != None:
@@ -136,12 +137,12 @@ def get_silence(audio, threshold=-80, interval=1):
 
 if __name__ == "__main__":
     
-    audio_file_path = "./raw_data/SAVEE/DC-a-08.wav"
-    #audio_file_path = "./raw_data/RAVDESS/03-01-01-01-01-01-01.wav"
+    #audio_file_path = "./raw_data/SAVEE/DC-a-08.wav"
+    audio_file_path = "./raw_data/RAVDESS/03-01-03-01-01-01-17.wav"
     print(get_silence(audio_file_path, threshold=0))
-    plot_waveform(audio_file_path)
+    #plot_waveform(audio_file_path)
     #plot_MFCC(audio_file_path)
     audio = AudioSegment.from_wav(audio_file_path)
     print(len(audio) / 1000)
-    #wav_to_mp3(audio_file_path)
+    wav_to_mp3(audio_file_path)
     

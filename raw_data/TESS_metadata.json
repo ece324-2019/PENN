@@ -214,5 +214,7 @@
         "young",
         "youth"
     ],
-    "gender": "Female"
+    "gender": "Female",
+    "sample rate": 44100,
+    "duration": 2.5
 }

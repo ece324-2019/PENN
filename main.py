@@ -140,13 +140,15 @@ def main(args):
     
     Metadata = json.load(open(f"./data/Metadata.json", "r"))
     n_mfcc = Metadata["n_mfcc"]
-    audio_length = Metadata["audio_length"]
     n_classes = len(Metadata["mapping"])
 
     model_name = args.model
 
     model = None
     hyperparameters = {}
+
+    # temp
+    audio_length = 216
 
     """ Specification for each model """
     if model_name.lower() == "mlp":
@@ -243,19 +245,21 @@ if __name__ == "__main__":
     args = get_args()
     
     if args.preprocess:
-        """
+        le = None
+
+        print("Processing RAVDESS dataset")
         RAVDESS = RAVDESS_Preprocessor(seed=100)
         #RAVDESS.rearrange()
         df, n_mfcc, audio_length = RAVDESS.mfcc_conversion()
-        df = RAVDESS.augment(df)
-        RAVDESS.split_data(df, n_mfcc, le=None, append=False)
-        """
+        df = RAVDESS.augment(df, frac=1)
+        le = RAVDESS.split_data(df, n_mfcc, le=le, append=False)
 
+        print("Processing SAVEE dataset")
         SAVEE = SAVEE_Preprocessor(seed=100)
         #SAVEE.rearrange()
         df, n_mfcc, audio_length = SAVEE.mfcc_conversion()
-        df = SAVEE.augment(df)
-        SAVEE.split_data(df, n_mfcc, le=None, append=False)
+        df = SAVEE.augment(df, frac=1)
+        le = SAVEE.split_data(df, n_mfcc, le=le, append=True)
 
         """ data preprocessing 
         RAVDESS = RAVDESS_Preprocessor(seed=100)
