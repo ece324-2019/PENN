@@ -136,14 +136,12 @@ def training_loop(model, train_iter, valid_iter, test_iter, optimizer, loss_fnc,
         torch.save(model, f"{model_name.lower()}.pt")
         print(f"Model saved as '{model_name.lower()}.pt'")
 
-def main():
+def main(args):
     
     Metadata = json.load(open(f"./data/Metadata.json", "r"))
     n_mfcc = Metadata["n_mfcc"]
     audio_length = Metadata["audio_length"]
     n_classes = len(Metadata["mapping"])
-
-    args = get_args()
 
     model_name = args.model
 
@@ -241,23 +239,25 @@ def main():
     plot_confusion_matrix(results, list(Metadata["mapping"].values()))
 
 if __name__ == "__main__":
-    """ Uncomment this to run model """
-    #main()
+    args = get_args()
     
-    """ Uncomment this for Preprocessing of RAVDESS """
-    RAVDESS = RAVDESS_Preprocessor(seed=100)
-    df, n_mfcc, audio_length = RAVDESS.mfcc_conversion()
-    RAVDESS.split_data(df, n_mfcc, audio_length, le=None, append=False)
+    if args.preprocess:
+        
+        RAVDESS = RAVDESS_Preprocessor(seed=100)
+        df, n_mfcc, audio_length = RAVDESS.mfcc_conversion()
+        df = RAVDESS.augment(df)
+        RAVDESS.split_data(df, n_mfcc, audio_length, le=None, append=False)
 
-    """ data preprocessing 
-    RAVDESS = RAVDESS_Preprocessor(seed=100)
-    SAVEE = SAVEE_Preprocessor(seed=100)
-    TESS = TESS_Preprocessor(seed=100)
-    #RAVDESS.rearrange()
-    #SAVEE.rearrange()
-    #TESS.rearrange()
-    #process_datasets(RAVDESS, SAVEE, TESS)
-    df, n_mfcc, audio_length = TESS.mfcc_conversion()
-    le = TESS.split_data(df, n_mfcc, audio_length, le=None, append=False)
-    """
-    
+        """ data preprocessing 
+        RAVDESS = RAVDESS_Preprocessor(seed=100)
+        SAVEE = SAVEE_Preprocessor(seed=100)
+        TESS = TESS_Preprocessor(seed=100)
+        #RAVDESS.rearrange()
+        #SAVEE.rearrange()
+        #TESS.rearrange()
+        #process_datasets(RAVDESS, SAVEE, TESS)
+        df, n_mfcc, audio_length = TESS.mfcc_conversion()
+        le = TESS.split_data(df, n_mfcc, audio_length, le=None, append=False)
+        """
+    else:
+        main(args)

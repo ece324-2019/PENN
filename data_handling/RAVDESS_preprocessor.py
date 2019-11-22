@@ -8,6 +8,7 @@ class RAVDESS_Preprocessor(Preprocessor):
 
     name = "RAVDESS_Preprocessor"
     dataset = "RAVDESS"
+    sample_rate = 44100
 
     def __init__(self, raw_data_dir="ravdess-emotional-speech-audio", data_dir="RAVDESS", metadata_file="RAVDESS_metadata.json", seed=None):
         Preprocessor.__init__(self, seed=seed)
@@ -41,8 +42,8 @@ class RAVDESS_Preprocessor(Preprocessor):
         actor = parts[-1]
 
         skip = False
-        if parts[3] == '01':
-            skip = True
+        #if parts[3] == '01':
+        #    skip = True
         
         return skip, actor, gender, emotion
 
