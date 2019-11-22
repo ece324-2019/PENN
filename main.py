@@ -39,7 +39,7 @@ def evaluate(model, data_loader, loss_fnc):
     correct = 0.0
     total_samples = 0.0
     with torch.no_grad():
-        for batch, labels in data_loader:
+        for batch, labels, lengths in data_loader:
 
             predictions = model(batch.float())
             
@@ -69,8 +69,8 @@ def training_loop(model, train_iter, valid_iter, test_iter, optimizer, loss_fnc,
     running_loss = 0.0
     running_acc = 0.0
     for e in range(epochs):
-        for i, (batch, labels) in enumerate(train_iter):
-            evaluated_data += labels.size()[0]
+        for i, (batch, labels, lengths) in enumerate(train_iter):
+            evaluated_data += labels.size(0)
             total_batches += 1
 
             # re-initializing optimizer
@@ -136,20 +136,19 @@ def training_loop(model, train_iter, valid_iter, test_iter, optimizer, loss_fnc,
         torch.save(model, f"{model_name.lower()}.pt")
         print(f"Model saved as '{model_name.lower()}.pt'")
 
-def main():
+def main(args):
     
     Metadata = json.load(open(f"./data/Metadata.json", "r"))
     n_mfcc = Metadata["n_mfcc"]
     audio_length = Metadata["audio_length"]
     n_classes = len(Metadata["mapping"])
 
-    args = get_args()
-
     model_name = args.model
 
     model = None
     hyperparameters = {}
 
+    """ Specification for each model """
     if model_name.lower() == "mlp":
         model = MLP(input_size=n_mfcc*audio_length, output_size=n_classes)
         hyperparameters = {
@@ -198,7 +197,7 @@ def main():
         raise ValueError(f"Model '{model_name}' does not exist")
 
     train_iter, valid_iter, test_iter = load_data(  hyperparameters["batch_size"], 
-                                                    n_mfcc, audio_length, 
+                                                    n_mfcc, 
                                                     overfit=args.overfit
                                                 )
     
@@ -217,7 +216,7 @@ def main():
     predictions = torch.Tensor()
     labels = torch.Tensor()
 
-    for batch, batch_labels in test_iter:
+    for batch, batch_labels, batch_lengths in test_iter:
         batch_predictions = model(batch.float())
         batch_predictions = torch.argmax(batch_predictions, dim=1)
 
@@ -241,23 +240,33 @@ def main():
     plot_confusion_matrix(results, list(Metadata["mapping"].values()))
 
 if __name__ == "__main__":
-    """ Uncomment this to run model """
-    #main()
+    args = get_args()
     
-    """ Uncomment this for Preprocessing of RAVDESS """
-    RAVDESS = RAVDESS_Preprocessor(seed=100)
-    df, n_mfcc, audio_length = RAVDESS.mfcc_conversion()
-    RAVDESS.split_data(df, n_mfcc, audio_length, le=None, append=False)
+    if args.preprocess:
+        """
+        RAVDESS = RAVDESS_Preprocessor(seed=100)
+        #RAVDESS.rearrange()
+        df, n_mfcc, audio_length = RAVDESS.mfcc_conversion()
+        df = RAVDESS.augment(df)
+        RAVDESS.split_data(df, n_mfcc, le=None, append=False)
+        """
 
-    """ data preprocessing 
-    RAVDESS = RAVDESS_Preprocessor(seed=100)
-    SAVEE = SAVEE_Preprocessor(seed=100)
-    TESS = TESS_Preprocessor(seed=100)
-    #RAVDESS.rearrange()
-    #SAVEE.rearrange()
-    #TESS.rearrange()
-    #process_datasets(RAVDESS, SAVEE, TESS)
-    df, n_mfcc, audio_length = TESS.mfcc_conversion()
-    le = TESS.split_data(df, n_mfcc, audio_length, le=None, append=False)
-    """
-    
+        SAVEE = SAVEE_Preprocessor(seed=100)
+        #SAVEE.rearrange()
+        df, n_mfcc, audio_length = SAVEE.mfcc_conversion()
+        df = SAVEE.augment(df)
+        SAVEE.split_data(df, n_mfcc, le=None, append=False)
+
+        """ data preprocessing 
+        RAVDESS = RAVDESS_Preprocessor(seed=100)
+        SAVEE = SAVEE_Preprocessor(seed=100)
+        TESS = TESS_Preprocessor(seed=100)
+        #RAVDESS.rearrange()
+        #SAVEE.rearrange()
+        #TESS.rearrange()
+        #process_datasets(RAVDESS, SAVEE, TESS)
+        df, n_mfcc, audio_length = TESS.mfcc_conversion()
+        le = TESS.split_data(df, n_mfcc, audio_length, le=None, append=False)
+        """
+    else:
+        main(args)

@@ -11,6 +11,7 @@ def get_args():
     parser.add_argument('--eval_every', type=int, default=-1)
     parser.add_argument('--overfit', action="store_true", default=False)
     parser.add_argument('--save', action="store_true", default=False)
+    parser.add_argument('--preprocess', action="store_true", default=False)
 
     args = parser.parse_args()
     return args

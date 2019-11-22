@@ -19,9 +19,10 @@ class Preprocessor(object):
 
     extra = ['.DS_Store']
 
-    def __init__(self, seed=None):
+    def __init__(self, seed=None, mfcc=30):
         self.ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.seed = seed
+        self.n_mfcc = n_mfcc
 
     def rearrange(self):
         raise NotImplementedError("")
@@ -81,7 +82,7 @@ class Preprocessor(object):
         
         print("Creating Dataframes")
         df_mfcc = pd.DataFrame(columns=["feature"])
-        df_label = pd.DataFrame(columns=["label", "actor"])
+        df_label = pd.DataFrame(columns=["label", "actor", "length"])
 
         # generate list of all files within an emotion in order
         fname_list = os.listdir(self.path)
@@ -108,7 +109,7 @@ class Preprocessor(object):
 
             # Add mfcc representation of recording as well as its gender and emotion label to panda frames
             df_mfcc.loc[cnt] = [ MFCC.flatten() ]
-            df_label.loc[cnt] = [ f"{gender.lower()}_{emotion.lower()}", actor ]
+            df_label.loc[cnt] = [ f"{gender.lower()}_{emotion.lower()}", actor, audio_length ]
             cnt += 1
             
         print("Loaded data into dataframe\n")
@@ -124,55 +125,68 @@ class Preprocessor(object):
 
 
     """ Augmentation """
-    def pitch(self, data_array, sample_rate=44100):
-        bins_per_octave = 12 #standard/ default number for music/sound
-        pitch_pm = 2 #factor
-        pitch_change =  pitch_pm * 2*(np.random.uniform())
-        data = librosa.effects.pitch_shift(data.astype('float64'),sample_rate, n_steps=pitch_change,bins_per_octave=bins_per_octave)
-        return data
+    def pitch(self, data_array, sample_rate):
+        bins_per_octave = 12 # standard/ default number for music/sound
+        pitch_pm = 2 # factor
+        pitch_change = pitch_pm * 2 * np.random.uniform()
+        data_array = librosa.effects.pitch_shift(   data_array.astype('float64'), sample_rate, 
+                                                    n_steps=pitch_change, 
+                                                    bins_per_octave=bins_per_octave
+                                                )
+        return data_array
 
     def white_noise(self, data_array):
-        #the number below is just how much minimum amplitude you want to add. should limit the value between 0 and 0.056 from some testing.
-        noise_amp = 0.06*np.random.uniform()*np.amax(data)
-        data = data.astype('float64') + noise_amp * np.random.normal(size=data.shape[0])
-        return data
+        # The number below is just how much minimum amplitude you want to add. Should limit the value between 0 and 0.056 from some testing.
+        noise_amp = 0.06 * np.random.uniform() * np.amax(data_array)
+        data_array = data_array.astype('float64') + noise_amp * np.random.normal(size=data_array.shape[0])
+        return data_array
 
     def shift(self, data_array):
-        #shifts the data left or right randomly depending on the low and high value. The audio will roll around
-        #like the lin alg quiz question. I though that was bad as the sentence wont make sense but since we dont even look at the words
-        #this is probably good.
-        s_range = int(np.random.uniform(low=-90, high = 90)*500)
-        return np.roll(data, s_range)
+        # Shifts the data left or right randomly depending on the low and high value. 
+        # The audio will roll around like the lin alg quiz question. 
+        # I though that was bad as the sentence wont make sense but since we dont even look at the words so this is probably good.
+        # ...wut ^^
+        s_range = int( 500 * np.random.uniform(low=-90, high=90) )
+        return np.roll(data_array, s_range)
 
-    def random_change(self, data_array):
-        #gives back the exact same shape but scaled amplitude down or up.
-        #Will basically create quieter and louder versions of our dataset.
+    def volume(self, data_array):
+        # Gives back the exact same shape but scaled amplitude down or up.
+        # Will basically create quieter and louder versions of our dataset.
         dyn_change = np.random.uniform(low=-0.5 ,high=3)
-        return (data * dyn_change)
+        return data_array * dyn_change
     
-    def augment(self, df, sample_rate=44100):
-        print(len(df))
-        #pitch_data = df.sample(frac=0.1)
-        #print("pitch data sampled", len(pitch_data))
-        #white_noise_data = df.sample(n=n).to_numpy(dtype=np.float32)
-        shift_data = df.sample(frac=0.1)#.to_numpy(dtype=np.float32)
-        #random_change_data = df.sample(n=n).to_numpy(dtype=np.float32)
+    def augment(self, df, frac=0.1):
+        # sampling a fraction of the total data
+        pitch_data = df.sample(frac=frac)
+        white_noise_data = df.sample(frac=frac)
+        shift_data = df.sample(frac=frac)
+        volume_data = df.sample(frac=frac)
 
-        Data = [shift_data]
-        Aug_functions = [self.shift]
-        #Data = [pitch_data, white_noise_data, shift_data, random_change_data]
-        #Aug_functions = [lambda data: self.pitch(data, sample_rate), self.white_noise, self.shift, self.random_change]
-        for data, f in zip(Data, Aug_functions):
-            print("forloop 1")
-            labels, authors = data["label"].to_numpy(), data["author"].to_numpy()
-            np_data = data.drop(["label", "author"], axis=1).to_numpy(dtype=np.float32)
-            for sample, label, author in zip(np_data, labels, authors):
-                print("next sample")
-                np_aug_data = f(sample)
-                print(np_aug_data)
-                #data.append({"label" : label, "author" : author, })
+        # looping through each augmentation type
+        Data = [pitch_data, white_noise_data, shift_data, volume_data]
+        Aug_functions = [lambda data: self.pitch(data, self.sample_rate), self.white_noise, self.shift, self.volume]
+        Name = ["pitch", "white noise", "shifting", "volume"]
+        for data, f, name in zip(Data, Aug_functions, Name):
+            
+            # extracting labels and actors
+            labels = data["label"].to_numpy()
+            actors = data["actor"].to_numpy()
+            audio_lengths = data["length"].to_numpy()
+            np_data = data.drop(["label", "actor", "length"], axis=1).to_numpy(dtype=np.float32)
+            
+            # looping through each sample
+            for np_sample, label, actor, audio_length in zip(np_data, labels, actors, audio_lengths):
 
-
+                df_label = pd.DataFrame({"label" : [label], "actor" : [actor], "length" : [audio_length]})
+                df_aug_data = pd.DataFrame( [f(np_sample)] ) # creates a dataframe with one row
+                
+                # concatinating augmented results with corresponding labels to original dataframe
+                df_aug_data = pd.concat( [df_label, df_aug_data], axis=1 )
+                df = pd.concat( [df, df_aug_data], ignore_index=True )
+            
+            print(f"{name.title()} augmentation complete")
+        print()
+        return df
 
     """ Making datasets """
     def split_data(self, df, n_mfcc, audio_length, le=None, append=True):
@@ -243,23 +257,23 @@ class Preprocessor(object):
         
         # concatinating everything together and separating out labels
         train_data = pd.concat( Data_Splits["training"].values(), axis=0 )
-        train_label = train_data["label"]
-        train_data = train_data.drop(["label", "actor"], axis=1)
+        train_label = train_data[["label", "length"]]
+        train_data = train_data.drop(["label", "actor", "length"], axis=1)
 
         valid_data = pd.concat( Data_Splits["validation"].values(), axis=0 )
-        valid_label = valid_data["label"]
-        valid_data = valid_data.drop(["label", "actor"], axis=1)
+        valid_label = valid_data[["label", "length"]]
+        valid_data = valid_data.drop(["label", "actor", "length"], axis=1)
 
-        test_label = test_data["label"]
-        test_data = test_data.drop(["label", "actor"], axis=1)
+        test_label = test_data[["label", "length"]]
+        test_data = test_data.drop(["label", "actor", "length"], axis=1)
 
         # Overfit Data with equal distribution of labels
         overfit_data = pd.DataFrame(columns=df.columns)
         for int_category in Labels:
             category_df = df.loc[ df["label"] == int(int_category) ].sample(n=10, random_state=self.seed)
             overfit_data = pd.concat( (overfit_data, category_df), axis=0 )
-        overfit_label = overfit_data["label"]
-        overfit_data = overfit_data.drop(["label", "actor"], axis=1)
+        overfit_label = overfit_data[["label", "length"]]
+        overfit_data = overfit_data.drop(["label", "actor", "length"], axis=1)
 
         # Need to normalize data, normalize other based off of normalization of training data
         mean = np.mean(train_data, axis=0)
@@ -300,9 +314,11 @@ class Preprocessor(object):
         if append:
             pass
         else:
-            Metadata = {"mapping" : Mapping, "n_mfcc" : n_mfcc, "audio_length" : audio_length, "mean" : mean, "std" : std}
+            Metadata = {"mapping" : Mapping, "n_mfcc" : n_mfcc, "mean" : mean, "std" : std}
             with open(f"{self.ROOT}/data/Metadata.json", "w+") as g:
                 json.dump(Metadata, g, indent=4)
         
+        print(f"{self.dataset} processing complete")
+        print()
         return le
     
