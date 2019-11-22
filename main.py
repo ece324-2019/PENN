@@ -1,19 +1,25 @@
+# commanline arguments
+from args import get_args
+
+# preprocessing
+from data_handling.load_data import *
+from data_handling.RAVDESS_preprocessor import RAVDESS_Preprocessor
+from data_handling.SAVEE_preprocessor import SAVEE_Preprocessor
+from data_handling.TESS_preprocessor import TESS_Preprocessor
+
+# models
 from baseline.model import MLP, Average
 from CNN.model import CNN
 from RNN.model import RNN
 
-from args import get_args
-
-from data_handling.load_data import *
-from data_handling.RAVDESS_preprocessor import RAVDESS_Preprocessor
-from data_handling.SAVEE_preprocessor import SAVEE_Preprocessor
-from utils import *
-
+# PyTorch
 import torch
 import torch.nn as nn
 from torchsummary import summary
 
+# Plots and summary statistics
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
+from utils import *
 
 import json
 
@@ -235,14 +241,23 @@ def main():
     plot_confusion_matrix(results, list(Metadata["mapping"].values()))
 
 if __name__ == "__main__":
-    main()
+    """ Uncomment this to run model """
+    #main()
     
+    """ Uncomment this for Preprocessing of RAVDESS """
+    RAVDESS = RAVDESS_Preprocessor(seed=100)
+    df, n_mfcc, audio_length = RAVDESS.mfcc_conversion()
+    RAVDESS.split_data(df, n_mfcc, audio_length, le=None, append=False)
+
     """ data preprocessing 
     RAVDESS = RAVDESS_Preprocessor(seed=100)
     SAVEE = SAVEE_Preprocessor(seed=100)
+    TESS = TESS_Preprocessor(seed=100)
     #RAVDESS.rearrange()
     #SAVEE.rearrange()
-    process_datasets(RAVDESS, SAVEE)
-    #df, n_mfcc, audio_length = SAVEE.mfcc_conversion()
-    #le = SAVEE.split_data(df, n_mfcc, audio_length, le=None, append=False)
+    #TESS.rearrange()
+    #process_datasets(RAVDESS, SAVEE, TESS)
+    df, n_mfcc, audio_length = TESS.mfcc_conversion()
+    le = TESS.split_data(df, n_mfcc, audio_length, le=None, append=False)
     """
+    

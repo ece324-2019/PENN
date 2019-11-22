@@ -24,10 +24,16 @@ class CNN(nn.Module):
         
     
     # calulates output size
-    def _output_size(self, inp_size, kernel_size, stride, padding):
+    def _output_size(self, inp_size, kernel_size, stride=1, padding=0, dilation=1):
+
+        kernel_size = kernel_size if type(kernel_size) == tuple or type(kernel_size) == list else (kernel_size, kernel_size)
+        stride = stride if type(stride) == tuple or type(stride) == list else (stride, stride)
+        padding = padding if type(padding) == tuple or type(padding) == list else (padding, padding)
+        dilation = dilation if type(dilation) == tuple or type(dilation) == list else (dilation, dilation)
+
         h, w = inp_size
-        h_output = int((h - kernel_size + 2*padding) / stride) + 1
-        w_output = int((w - kernel_size + 2*padding) / stride) + 1
+        h_output = int((h - dilation[0] * (kernel_size[0] - 1) + 2*padding[0] - 1) / stride[0]) + 1
+        w_output = int((w - dilation[1] * (kernel_size[1] - 1) + 2*padding[1] - 1) / stride[1]) + 1
         return h_output, w_output
 
     def forward(self, x):

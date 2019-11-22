@@ -42,6 +42,8 @@ def load_data(batch_size, n_mfcc, audio_length, overfit=False):
 
     train_data, train_label, valid_data, valid_label, test_data, test_label = get_data(overfit=overfit)
 
+    print(train_data.shape)
+
     train_data = torch.from_numpy( train_data.to_numpy(dtype=np.float32) ).reshape(-1, n_mfcc, audio_length)
     train_label = torch.from_numpy( train_label.to_numpy(dtype=int) ).squeeze()
     #train_label = one_hot_encode(train_label)

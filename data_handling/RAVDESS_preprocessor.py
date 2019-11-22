@@ -13,7 +13,7 @@ class RAVDESS_Preprocessor(Preprocessor):
         Preprocessor.__init__(self, seed=seed)
 
         self.extra += ['audio_speech_actors_01-24']
-        self.test_actors = ['01', '02', '03']
+        self.test_actors = ['01', '02', '04']       # 2 female to offset SAVEE
 
         self.original_path = os.path.join(self.ROOT, "raw_data", raw_data_dir)
         self.path = os.path.join(self.ROOT, "raw_data", data_dir)
