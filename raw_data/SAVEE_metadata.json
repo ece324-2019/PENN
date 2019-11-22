@@ -1,0 +1,18 @@
+{
+    "actors": [
+        "DC",
+        "JE",
+        "JK",
+        "KL"
+    ],
+    "emotion": {
+        "a": "angry",
+        "d": "disgust",
+        "f": "fear",
+        "h": "happy",
+        "n": "neutral",
+        "sa": "sad",
+        "su": "surprised"
+    },
+    "gender": "Male"
+}

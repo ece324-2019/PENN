@@ -1,9 +1,11 @@
 import torch
 import torch.nn as nn
 
-class MLP(nn.Module):
+import librosa
 
-    """ Very simple MLP
+class MLP(nn.Module):
+    """ If only 1 layer, then this is
+        essentially a logistical regression
     """
 
     def __init__(self, input_size, output_size, hidden_layers=[], seed=None):
@@ -54,8 +56,11 @@ class Average(nn.Module):
         if seed != None:
             torch.manual_seed(seed)
         
-        self.fc = nn.Linear(input_size, output_size)
+        self.fc = nn.Sequential(
+            nn.Linear(input_size, output_size),
+            nn.Softmax(dim=1)
+        )
     
     def forward(self, x):
         average = x.mean(1)
-        return nn.Softmax(dim=1)(self.fc(average).squeeze())
+        return self.fc(average).squeeze()

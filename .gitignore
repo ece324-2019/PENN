@@ -144,10 +144,12 @@ test.py
 # dataset
 data
 raw_data/RAVDESS
-raw_data/savee
+raw_data/SAVEE
 
 # data files
 *.tsv
 *.csv
 *.wav
 *.raw
+*.mp3
+*.txt

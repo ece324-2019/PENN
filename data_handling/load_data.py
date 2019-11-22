@@ -2,6 +2,8 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 
 import pandas as pd
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
 
 import json
 import os
@@ -39,17 +41,19 @@ def one_hot_encode(df_label):
 def load_data(batch_size, n_mfcc, audio_length, overfit=False):
 
     train_data, train_label, valid_data, valid_label, test_data, test_label = get_data(overfit=overfit)
-    
-    train_data = torch.from_numpy( train_data.to_numpy() ).reshape(-1, n_mfcc, audio_length)
-    train_label = torch.from_numpy( train_label.to_numpy() ).squeeze()
+
+    print(train_data.shape)
+
+    train_data = torch.from_numpy( train_data.to_numpy(dtype=np.float32) ).reshape(-1, n_mfcc, audio_length)
+    train_label = torch.from_numpy( train_label.to_numpy(dtype=int) ).squeeze()
     #train_label = one_hot_encode(train_label)
     
-    valid_data = torch.from_numpy( valid_data.to_numpy() ).reshape(-1, n_mfcc, audio_length)
-    valid_label = torch.from_numpy( valid_label.to_numpy() ).squeeze()
+    valid_data = torch.from_numpy( valid_data.to_numpy(dtype=np.float32) ).reshape(-1, n_mfcc, audio_length)
+    valid_label = torch.from_numpy( valid_label.to_numpy(dtype=int) ).squeeze()
     #valid_label = one_hot_encode(valid_label)
 
-    test_data = torch.from_numpy( test_data.to_numpy() ).reshape(-1, n_mfcc, audio_length)
-    test_label = torch.from_numpy( test_label.to_numpy() ).squeeze()
+    test_data = torch.from_numpy( test_data.to_numpy(dtype=np.float32) ).reshape(-1, n_mfcc, audio_length)
+    test_label = torch.from_numpy( test_label.to_numpy(dtype=int) ).squeeze()
     #test_label = one_hot_encode(test_label)
     
     train_iter = DataLoader(TensorDataset(train_data, train_label), batch_size=batch_size, shuffle=True)

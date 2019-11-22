@@ -4,51 +4,49 @@ import torch
 import torch.nn.functional as F
 
 class CNN(nn.Module):
-    def __init__(self, n_mfcc):
+    def __init__(self, n_mfcc, n_classes, n_kernels=50):
         super(CNN, self).__init__()
-        n_classes = 16 # We can group up Calm and Neutral to get 14 instead of 16 labels
-        n_kernels = 32
-        # input is of size (batch_size, 30, 216, 1)
-        # applying 32 kernels of size of (4,10)
+        # In n_classes we can group up Calm and Neutral to get 14 instead of 16 labels
         self.conv1 = nn.Sequential(
-                            nn.Conv2d(in_channels = 1, out_channels = n_kernels, kernel_size = (4,10)),
-                            nn.BatchNorm2d(n_kernels),
-                            nn.MaxPool2d(kernel_size=(4, 10), stride=(2, 2), padding = (1,4)),
-                            nn.ReLU(),
-                            nn.Dropout(p=0.2)
-                            )
+            nn.Conv2d(in_channels=1, out_channels=n_kernels, kernel_size=(n_mfcc, 10), stride=1, padding=0),
+            nn.ReLU(),
+            nn.Dropout(p=0.2)
+        )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(in_channels=n_kernels, out_channels=n_kernels, kernel_size=(4, 10)),
-            nn.BatchNorm2d(n_kernels),
-            nn.MaxPool2d(kernel_size=(4, 10), stride=(2, 2), padding=(1, 4)),
+            nn.Conv2d(in_channels=n_kernels, out_channels=2*n_kernels, kernel_size=(1, 10), stride=1, padding=0),
             nn.ReLU(),
             nn.Dropout(p=0.2)
-                            )
-        self.end = nn.Sequential(
-            nn.Dropout(p=0.2),
-            nn.BatchNorm2d(n_kernels),
-            nn.ReLU(),
-            nn.Dropout(p=0.2)
-                            )
+        )
+        self.fc = nn.Sequential(
+            nn.Linear(n_kernels, n_classes),
+            nn.Softmax(dim=1)
+        )
+        
+    
+    # calulates output size
+    def _output_size(self, inp_size, kernel_size, stride=1, padding=0, dilation=1):
+
+        kernel_size = kernel_size if type(kernel_size) == tuple or type(kernel_size) == list else (kernel_size, kernel_size)
+        stride = stride if type(stride) == tuple or type(stride) == list else (stride, stride)
+        padding = padding if type(padding) == tuple or type(padding) == list else (padding, padding)
+        dilation = dilation if type(dilation) == tuple or type(dilation) == list else (dilation, dilation)
+
+        h, w = inp_size
+        h_output = int((h - dilation[0] * (kernel_size[0] - 1) + 2*padding[0] - 1) / stride[0]) + 1
+        w_output = int((w - dilation[1] * (kernel_size[1] - 1) + 2*padding[1] - 1) / stride[1]) + 1
+        return h_output, w_output
+
     def forward(self, x):
-        batch_size = x.size()[0]
-        #shape coming in [batch size, 30*216]
-        x = torch.reshape(x, (batch_size,1, 30, 216))
-        #print("Initial Size",x.size()) #[64,1,30,216]
-        x = self.conv1(x)
-        #print("After Conv1",x.size())  #[64,32,6,207]
-        x = self.conv2(x)
-        #print("after conv2", x.size()) #[64,32,5,47]
-        x = self.conv2(x)
-        #print("after conv3", x.size())  # [64,32,1,19]
-        x = x.view(x.size()[0], -1)
-        #print("after flattening x", x.size()) #[64, 608]
-        self.fc1 = nn.Linear(x.size()[1],64)
-        x = self.fc1(x)
-        #print("after linear", x.size())
-        #x= self.end(x)
-        #print("after end", x.size())
-        self.linear = nn.Sequential(nn.Linear(x.size()[1],16),nn.Softmax())
-        x= self.linear(x)
-        #print("at the very end", x.size())
-        return x
+        x = x.unsqueeze(1)
+        
+        conv1_output = self.conv1(x)
+        pool1 = nn.MaxPool2d(kernel_size=(1, conv1_output.size(3)), stride=1, padding=0)
+        conv1_output = pool1(conv1_output)
+        
+        #conv2_output = self.conv1(conv1_output)
+        #pool2 = nn.MaxPool2d(kernel_size=(1, conv2_output.size(3)), stride=1, padding=0)
+        #conv2_output = pool2(conv2_output).squeeze()
+        
+        #output = torch.cat((conv1_output, conv2_output), 1)
+
+        return self.fc(conv1_output.squeeze())
