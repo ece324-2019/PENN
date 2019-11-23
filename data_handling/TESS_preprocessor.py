@@ -13,7 +13,7 @@ class TESS_Preprocessor(Preprocessor):
         Preprocessor.__init__(self, seed=seed, n_mfcc=n_mfcc)
 
         self.extra += ['TESS Toronto emotional speech set data']
-        self.test_actors = ["OAF"]
+        self.test_actors = []
 
         self.original_path = os.path.join(self.ROOT, "raw_data", raw_data_dir)
         self.path = os.path.join(self.ROOT, "raw_data", data_dir)

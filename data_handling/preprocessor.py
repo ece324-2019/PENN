@@ -210,9 +210,11 @@ class Preprocessor(object):
 
         # Splitting Testing data from rest by actor
         #   i.e. Actors 1, 2, 3, and 4 go into Testing Data
-        test_actors = df["actor"].isin(self.test_actors)
-        test_data = df.loc[ test_actors ]
-        df = df.drop(df[test_actors].index, axis=0)
+        test_data = pd.DataFrame()
+        if len(self.test_actors) != 0:
+            test_actors = df["actor"].isin(self.test_actors)
+            test_data = df.loc[ test_actors ]
+            df = df.drop(df[test_actors].index, axis=0)
         
         # separating into each unique label
         Data_Splits = {"training" : {}, "validation" : {}}
@@ -246,13 +248,18 @@ class Preprocessor(object):
         
         # had to do it separately for test data
         print("Test Data")
-        category_counts = test_data["label"].value_counts()
-        total = 0
-        for category_int in Labels:
-            curr = category_counts[int(category_int)]
-            print(f"\t{Mapping[str(category_int)]:20s} {curr}")
-            total += curr
-        print(f"Total: {int(total)}")
+        if len(self.test_actors) != 0:
+            category_counts = test_data["label"].value_counts()
+            total = 0
+            for category_int in Labels:
+                curr = category_counts[int(category_int)]
+                print(f"\t{Mapping[str(category_int)]:20s} {curr}")
+                total += curr
+            print(f"Total: {int(total)}")
+        else:
+            for category_int in Labels:
+                print(f"\t{Mapping[str(category_int)]:20s} {0}")
+            print(f"Total: {0}")
         print()
         
         # concatinating everything together and separating out labels
@@ -264,8 +271,10 @@ class Preprocessor(object):
         valid_label = valid_data[["label", "length"]]
         valid_data = valid_data.drop(["label", "actor", "length"], axis=1)
 
-        test_label = test_data[["label", "length"]]
-        test_data = test_data.drop(["label", "actor", "length"], axis=1)
+        test_label = pd.DataFrame()
+        if len(self.test_actors) != 0:
+            test_label = test_data[["label", "length"]]
+            test_data = test_data.drop(["label", "actor", "length"], axis=1)
 
         # Overfit Data with equal distribution of labels
         overfit_data = pd.DataFrame(columns=df.columns)
@@ -276,18 +285,13 @@ class Preprocessor(object):
         overfit_data = overfit_data.drop(["label", "actor", "length"], axis=1)
 
         # Need to normalize data, normalize other based off of normalization of training data
-        mean = np.mean(train_data, axis=0)
-        std = np.std(train_data, axis=0)
+        mean = np.mean(train_data, axis=1)
+        std = np.std(train_data, axis=1)
         train_data = (train_data - mean)/std
         valid_data = (valid_data - mean)/std
-        test_data = (test_data - mean)/std
+        if len(self.test_actors) != 0:
+            test_data = (test_data - mean)/std
         overfit_data = (overfit_data - mean)/std
-        
-        # TODO: We might not have done the mean correctly
-        #print("Mean:", mean)
-        #print("Standard Deviation:", std)
-        mean = 10
-        std = 10
 
         # creating a directory we will need later
         try:
@@ -304,19 +308,26 @@ class Preprocessor(object):
         train_label.to_csv(path_or_buf=f"{self.ROOT}/data/train_label.tsv", sep='\t', mode=mode, index=True, header=header)
         valid_data.to_csv(path_or_buf=f"{self.ROOT}/data/valid_data.tsv", sep='\t', mode=mode, index=True, header=header)
         valid_label.to_csv(path_or_buf=f"{self.ROOT}/data/valid_label.tsv", sep='\t', mode=mode, index=True, header=header)
-        test_data.to_csv(path_or_buf=f"{self.ROOT}/data/test_data.tsv", sep='\t', mode=mode, index=True, header=header)
-        test_label.to_csv(path_or_buf=f"{self.ROOT}/data/test_label.tsv", sep='\t', mode=mode, index=True, header=header)
+        if len(self.test_actors) != 0:
+            test_data.to_csv(path_or_buf=f"{self.ROOT}/data/test_data.tsv", sep='\t', mode=mode, index=True, header=header)
+            test_label.to_csv(path_or_buf=f"{self.ROOT}/data/test_label.tsv", sep='\t', mode=mode, index=True, header=header)
         overfit_data.to_csv(path_or_buf=f"{self.ROOT}/data/overfit_data.tsv", sep='\t', mode=mode, index=True, header=header)
         overfit_label.to_csv(path_or_buf=f"{self.ROOT}/data/overfit_label.tsv", sep='\t', mode=mode, index=True, header=header)
 
+        # getting maximum audio length
+        max_audio_length = 0
+        try:
+            max_audio_length = max([train_label["length"].max(), valid_label["length"].max(), test_label["length"].max()])
+        except:
+            max_audio_length = max([train_label["length"].max(), valid_label["length"].max()])
+        
         # saving relavent metadata
         Metadata = {}
-        max_audio_length = max([train_label["length"].max(), valid_label["length"].max(), test_label["length"].max()])
         if append:
             Metadata = json.load(open(f"{self.ROOT}/data/Metadata.json", "r"))
             Metadata["max audio length"] = max(Metadata["max audio length"], max_audio_length)
         else:
-            Metadata = {"mapping" : Mapping, "n_mfcc" : self.n_mfcc, "max audio length" : max_audio_length, "mean" : mean, "std" : std}
+            Metadata = {"mapping" : Mapping, "n_mfcc" : self.n_mfcc, "max audio length" : max_audio_length, "mean" : mean.tolist(), "std" : std.tolist()}
         
         with open(f"{self.ROOT}/data/Metadata.json", "w+") as g:
             json.dump(Metadata, g, indent=4)
