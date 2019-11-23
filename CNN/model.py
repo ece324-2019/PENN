@@ -4,24 +4,23 @@ import torch
 import torch.nn.functional as F
 
 class CNN(nn.Module):
-    def __init__(self, n_mfcc, n_classes, n_kernels=50):
+    def __init__(self, n_mfcc, n_classes, n_kernels=35):
         super(CNN, self).__init__()
         # In n_classes we can group up Calm and Neutral to get 14 instead of 16 labels
         self.conv1 = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=n_kernels, kernel_size=(n_mfcc, 10), stride=1, padding=0),
+            nn.Conv2d(in_channels=1, out_channels=n_kernels, kernel_size=(n_mfcc, 10), stride=2, padding=0),
             nn.ReLU(),
-            nn.Dropout(p=0.2)
+            nn.Dropout(p=0.25)
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(in_channels=n_kernels, out_channels=2*n_kernels, kernel_size=(1, 10), stride=1, padding=0),
+            nn.Conv2d(in_channels=1, out_channels=2*n_kernels, kernel_size=(n_mfcc, 40), stride=1, padding=0),
             nn.ReLU(),
-            nn.Dropout(p=0.2)
+            nn.Dropout(p=0.25)
         )
         self.fc = nn.Sequential(
             nn.Linear(n_kernels, n_classes)
         )
-        
-    
+
     # calulates output size
     def _output_size(self, inp_size, kernel_size, stride=1, padding=0, dilation=1):
 
@@ -39,13 +38,14 @@ class CNN(nn.Module):
         x = x.unsqueeze(1)
         
         conv1_output = self.conv1(x)
+        conv2_output = self.conv2(x)
         pool1 = nn.MaxPool2d(kernel_size=(1, conv1_output.size(3)), stride=1, padding=0)
+        pool2 = nn.MaxPool2d(kernel_size=(1, conv2_output.size(3)), stride=1, padding=0)
         conv1_output = pool1(conv1_output)
-        
-        #conv2_output = self.conv1(conv1_output)
-        #pool2 = nn.MaxPool2d(kernel_size=(1, conv2_output.size(3)), stride=1, padding=0)
-        #conv2_output = pool2(conv2_output).squeeze()
-        
-        #output = torch.cat((conv1_output, conv2_output), 1)
-
-        return self.fc(conv1_output.squeeze())
+        conv2_output = pool2(conv2_output)
+        #print(conv1_output.size())
+        #print(conv2_output.size())
+        output = torch.cat((conv1_output, conv2_output), 1)
+        output = output.squeeze()
+        #print(output.size())
+        return self.fc(output)
