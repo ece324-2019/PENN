@@ -1,6 +1,7 @@
 # Manipulate audio
 import librosa
 from pydub import AudioSegment
+from pydub.playback import play
 
 # Manipulate data
 import pandas as pd
@@ -110,10 +111,6 @@ def plot_MFCC(audio_file_path):
     plt.tight_layout()
     plt.show()
 
-def wav_to_mp3(audio_file_path):
-    clip = AudioSegment.from_wav(audio_file_path)
-    clip.export("test.mp3", format="mp3")
-
 # We did not write this. Obtained from https://stackoverflow.com/questions/38231328/measure-length-of-silence-at-beginning-of-audio-file-wav
 def get_silence(audio, threshold=-80, interval=1):
     "get length of silence in seconds from a wav file"
@@ -134,6 +131,7 @@ def get_silence(audio, threshold=-80, interval=1):
 
     # convert blocks into seconds
     return round(silent_blocks * (interval/1000), 3)
+
 
 if __name__ == "__main__":
     
