@@ -19,7 +19,7 @@ class Preprocessor(object):
 
     extra = ['.DS_Store']
 
-    def __init__(self, seed=None, mfcc=30):
+    def __init__(self, seed=None, n_mfcc=30):
         self.ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.seed = seed
         self.n_mfcc = n_mfcc
@@ -78,7 +78,7 @@ class Preprocessor(object):
         
         print(f"{len(dir_list)} total data files now in the directory {self.path}")
 
-    def mfcc_conversion(self, sr=44100, n_mfcc=30, duration=2.5):
+    def mfcc_conversion(self):
         
         print("Creating Dataframes")
         df_mfcc = pd.DataFrame(columns=["feature"])
@@ -103,8 +103,8 @@ class Preprocessor(object):
 
             # Convert .wav file to a integer array using Librosa
             audio_file = os.path.join(self.path, f)
-            data, _ = librosa.load(audio_file, res_type='kaiser_fast', sr=sr, duration=duration)
-            MFCC = librosa.feature.mfcc(data, sr=sr, n_mfcc=n_mfcc)
+            data, _ = librosa.load(audio_file, res_type='kaiser_fast', sr=self.Metadata["sample rate"], duration=self.Metadata["duration"])
+            MFCC = librosa.feature.mfcc(data, sr=self.Metadata["sample rate"], n_mfcc=self.n_mfcc)
             n_mfcc, audio_length = MFCC.shape   # (30, 216) for default inputs
 
             # Add mfcc representation of recording as well as its gender and emotion label to panda frames
@@ -125,11 +125,11 @@ class Preprocessor(object):
 
 
     """ Augmentation """
-    def pitch(self, data_array, sample_rate):
+    def pitch(self, data_array):
         bins_per_octave = 12 # standard/ default number for music/sound
         pitch_pm = 2 # factor
         pitch_change = pitch_pm * 2 * np.random.uniform()
-        data_array = librosa.effects.pitch_shift(   data_array.astype('float64'), sample_rate, 
+        data_array = librosa.effects.pitch_shift(   data_array.astype('float64'), self.Metadata["sample rate"], 
                                                     n_steps=pitch_change, 
                                                     bins_per_octave=bins_per_octave
                                                 )
@@ -164,7 +164,7 @@ class Preprocessor(object):
 
         # looping through each augmentation type
         Data = [pitch_data, white_noise_data, shift_data, volume_data]
-        Aug_functions = [lambda data: self.pitch(data, self.sample_rate), self.white_noise, self.shift, self.volume]
+        Aug_functions = [self.pitch, self.white_noise, self.shift, self.volume]
         Name = ["pitch", "white noise", "shifting", "volume"]
         for data, f, name in zip(Data, Aug_functions, Name):
             
@@ -189,7 +189,7 @@ class Preprocessor(object):
         return df
 
     """ Making datasets """
-    def split_data(self, df, n_mfcc, audio_length, le=None, append=True):
+    def split_data(self, df, n_mfcc, le=None, append=True):
         
         # Integer encoding Labels and replace category labels
         if le == None:
