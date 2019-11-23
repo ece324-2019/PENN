@@ -121,7 +121,7 @@ class Preprocessor(object):
         # Concatenate into a single dataframe
         df = pd.concat([df_label, expanded_mfcc], axis=1)
 
-        return df, n_mfcc, audio_length
+        return df
 
 
     """ Augmentation """
@@ -189,7 +189,7 @@ class Preprocessor(object):
         return df
 
     """ Making datasets """
-    def split_data(self, df, n_mfcc, le=None, append=True):
+    def split_data(self, df, le=None, append=True):
         
         # Integer encoding Labels and replace category labels
         if le == None:
@@ -311,12 +311,15 @@ class Preprocessor(object):
 
         # saving relavent metadata
         Metadata = {}
+        max_audio_length = max([train_label["length"].max(), valid_label["length"].max(), test_label["length"].max()])
         if append:
-            pass
+            Metadata = json.load(open(f"{self.ROOT}/data/Metadata.json", "r"))
+            Metadata["max audio length"] = max(Metadata["max audio length"], max_audio_length)
         else:
-            Metadata = {"mapping" : Mapping, "n_mfcc" : n_mfcc, "mean" : mean, "std" : std}
-            with open(f"{self.ROOT}/data/Metadata.json", "w+") as g:
-                json.dump(Metadata, g, indent=4)
+            Metadata = {"mapping" : Mapping, "n_mfcc" : self.n_mfcc, "max audio length" : max_audio_length, "mean" : mean, "std" : std}
+        
+        with open(f"{self.ROOT}/data/Metadata.json", "w+") as g:
+            json.dump(Metadata, g, indent=4)
         
         print(f"{self.dataset} processing complete")
         print()

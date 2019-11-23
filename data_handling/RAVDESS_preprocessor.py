@@ -9,8 +9,8 @@ class RAVDESS_Preprocessor(Preprocessor):
     name = "RAVDESS_Preprocessor"
     dataset = "RAVDESS"
 
-    def __init__(self, raw_data_dir="ravdess-emotional-speech-audio", data_dir="RAVDESS", metadata_file="RAVDESS_metadata.json", seed=None):
-        Preprocessor.__init__(self, seed=seed)
+    def __init__(self, raw_data_dir="ravdess-emotional-speech-audio", data_dir="RAVDESS", metadata_file="RAVDESS_metadata.json", seed=None, n_mfcc=30):
+        Preprocessor.__init__(self, seed=seed, n_mfcc=n_mfcc)
 
         self.extra += ['audio_speech_actors_01-24']
         self.test_actors = ['01', '02', '04']       # 2 female to offset SAVEE

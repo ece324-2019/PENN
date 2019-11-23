@@ -9,8 +9,8 @@ class TESS_Preprocessor(Preprocessor):
     name = "TESS_Preprocessor"
     dataset = "TESS"
 
-    def __init__(self, raw_data_dir="TESS Toronto emotional speech set data", data_dir="TESS", metadata_file="TESS_metadata.json", seed=None):
-        Preprocessor.__init__(self, seed=seed)
+    def __init__(self, raw_data_dir="TESS Toronto emotional speech set data", data_dir="TESS", metadata_file="TESS_metadata.json", seed=None, n_mfcc=30):
+        Preprocessor.__init__(self, seed=seed, n_mfcc=n_mfcc)
 
         self.extra += ['TESS Toronto emotional speech set data']
         self.test_actors = ["OAF"]

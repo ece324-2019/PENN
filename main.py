@@ -121,34 +121,29 @@ def training_loop(model, train_iter, valid_iter, test_iter, optimizer, loss_fnc,
                 valid_accuracy=validation_acc, 
                 title=model_name)
     
-    # Final evaluation of Validation and Test Data
-    print()
-    print()
-    print(f"Training Loss: {training_error[-1]:.4f}\tTraining Accuracy: {training_acc[-1]*100:.2f}")
-    loss, acc = evaluate(model, valid_iter, loss_fnc)
-    print(f"Validation Loss: {loss:.4f}\tValidation Accuracy: {acc*100:.2f}")
-    loss, acc = evaluate(model, test_iter, loss_fnc)
-    print(f"Testing Loss: {loss:.4f}\tTesting Accuracy: {acc*100:.2f}")
-    print()
-    print()
-
     if save:
         torch.save(model, f"{model_name.lower()}.pt")
         print(f"Model saved as '{model_name.lower()}.pt'")
+
+    final_train_loss, final_train_acc = training_error[-1], training_acc[-1]        # Training
+    final_valid_loss, final_valid_acc = evaluate(model, valid_iter, loss_fnc)       # Validation
+    final_test_loss, final_test_acc = evaluate(model, test_iter, loss_fnc)          # Testing
+    
+    return final_train_loss, final_train_acc, final_valid_loss, final_valid_acc, final_test_loss, final_test_acc
+
 
 def main(args):
     
     Metadata = json.load(open(f"./data/Metadata.json", "r"))
     n_mfcc = Metadata["n_mfcc"]
+    #audio_length = Metadata["max audio length"]
+    audio_length = 216
     n_classes = len(Metadata["mapping"])
 
     model_name = args.model
 
     model = None
     hyperparameters = {}
-
-    # temp
-    audio_length = 216
 
     """ Specification for each model """
     if model_name.lower() == "mlp":
@@ -198,16 +193,27 @@ def main(args):
     else:
         raise ValueError(f"Model '{model_name}' does not exist")
 
-    train_iter, valid_iter, test_iter = load_data(  hyperparameters["batch_size"], 
+    train_iter, valid_iter, test_iter = load_data(  args.batch_size, 
                                                     n_mfcc, 
                                                     overfit=args.overfit
                                                 )
     
-    training_loop(  model, 
-                    train_iter, valid_iter, test_iter, 
-                    save=args.save, 
-                    **hyperparameters
-                )
+    final_train_loss, final_train_acc, \
+    final_valid_loss, final_valid_acc, \
+    final_test_loss, final_test_acc = training_loop(    model, 
+                                                        train_iter, valid_iter, test_iter, 
+                                                        save=args.save, 
+                                                        **hyperparameters
+                                                    )
+
+    # Final evaluation of Validation and Test Data
+    print()
+    print()
+    print(f"Training Loss: {final_train_loss:.4f}\tTraining Accuracy: {final_train_acc*100:.2f}")
+    print(f"Validation Loss: {final_valid_loss:.4f}\tValidation Accuracy: {final_valid_acc*100:.2f}")
+    print(f"Testing Loss: {final_test_loss:.4f}\tTesting Accuracy: {final_test_acc*100:.2f}")
+    print()
+    print()
 
     # summary statistics
     print("Model Summary:")
@@ -247,19 +253,30 @@ if __name__ == "__main__":
     if args.preprocess:
         le = None
 
+        """
         print("Processing RAVDESS dataset")
-        RAVDESS = RAVDESS_Preprocessor(seed=100)
+        RAVDESS = RAVDESS_Preprocessor(seed=100, n_mfcc=30)
         #RAVDESS.rearrange()
-        df, n_mfcc, audio_length = RAVDESS.mfcc_conversion()
+        df = RAVDESS.mfcc_conversion()
         df = RAVDESS.augment(df, frac=1)
-        le = RAVDESS.split_data(df, n_mfcc, le=le, append=False)
+        le = RAVDESS.split_data(df, le=le, append=False)
+        """
 
+        """
         print("Processing SAVEE dataset")
-        SAVEE = SAVEE_Preprocessor(seed=100)
+        SAVEE = SAVEE_Preprocessor(seed=100, n_mfcc=30)
         #SAVEE.rearrange()
-        df, n_mfcc, audio_length = SAVEE.mfcc_conversion()
+        df SAVEE.mfcc_conversion()
         df = SAVEE.augment(df, frac=1)
-        le = SAVEE.split_data(df, n_mfcc, le=le, append=True)
+        le = SAVEE.split_data(df, le=le, append=True)
+        """
+
+        print("Processing TESS dataset")
+        TESS = TESS_Preprocessor(seed=100, n_mfcc=30)
+        #TESS.rearrange()
+        df = TESS.mfcc_conversion()
+        #df = TESS.augment(df, frac=1)
+        le = TESS.split_data(df, le=le, append=False)
 
         """ data preprocessing 
         RAVDESS = RAVDESS_Preprocessor(seed=100)

@@ -12,8 +12,8 @@ class SAVEE_Preprocessor(Preprocessor):
     name = "SAVEE_Preprocessor"
     dataset = "SAVEE"
 
-    def __init__(self, raw_data_dir="AudioData", data_dir="SAVEE", metadata_file="SAVEE_metadata.json", seed=None):
-        Preprocessor.__init__(self, seed=seed)
+    def __init__(self, raw_data_dir="AudioData", data_dir="SAVEE", metadata_file="SAVEE_metadata.json", seed=None, n_mfcc=30):
+        Preprocessor.__init__(self, seed=seed, n_mfcc=n_mfcc)
 
         self.extra += ['AudioData', 'Info.txt']
         self.test_actors = ['DC']
