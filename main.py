@@ -253,14 +253,15 @@ if __name__ == "__main__":
     if args.preprocess:
         le = None
 
-        """
         print("Processing RAVDESS dataset")
         RAVDESS = RAVDESS_Preprocessor(seed=100, n_mfcc=30)
         #RAVDESS.rearrange()
         df = RAVDESS.mfcc_conversion()
-        df = RAVDESS.augment(df, frac=1)
+        df_males = df.loc[["male"]]        # obviously wouldn't drop the right columns but you get the idea
+        df.drop(columns=["male"])
+        df_males = RAVDESS.augment(df_males, frac=1)
+        df = pd.conca([df, df_males])
         le = RAVDESS.split_data(df, le=le, append=False)
-        """
 
         """
         print("Processing SAVEE dataset")
@@ -271,12 +272,14 @@ if __name__ == "__main__":
         le = SAVEE.split_data(df, le=le, append=True)
         """
 
+        """
         print("Processing TESS dataset")
         TESS = TESS_Preprocessor(seed=100, n_mfcc=30)
         #TESS.rearrange()
         df = TESS.mfcc_conversion()
         #df = TESS.augment(df, frac=1)
         le = TESS.split_data(df, le=le, append=False)
+        """
 
         """ data preprocessing 
         RAVDESS = RAVDESS_Preprocessor(seed=100)

@@ -19,15 +19,16 @@ class Personal_Preprocessor(Preprocessor):
         metadata_path = os.path.join(self.ROOT, "raw_data", metadata_file)
         self.Metadata = json.load(open(metadata_path, "r"))
 
-    def convert_to_wav(self):
+    def rearrange(self):
         fname_list = self.create_new_data_directory()
-        fname_list.sort()
+        
         for f in fname_list:
-            (final_file_path, file_extension) = os.path.splitext(f)
-            filepath = os.path.join(self.original_path,f)
+            final_file_path, file_extension = os.path.splitext(f)
+            filepath = os.path.join(self.original_path, f)
             finalpath = os.path.join(self.path, final_file_path + ".wav")
             track = AudioSegment.from_file(filepath, "m4a")
             file_handle = track.export(finalpath, format='wav')
+        
         self.check_dataset_created()
 
     def parse_file_name(self, f_name):
@@ -37,11 +38,13 @@ class Personal_Preprocessor(Preprocessor):
         gender = self.Metadata["gender"]
         emotion = self.Metadata["emotion"][parts[2]]
         actor = parts[0]
+        
         skip = False
+        
         return skip, actor, gender, emotion
 
 if __name__ == "__main__":
     Personal = Personal_Preprocessor(seed=100)
-    Personal.convert_to_wav()
+    Personal.rearrange()
     #df, n_mfcc, audio_length = RAVDESS.mfcc_conversion()
     #le = RAVDESS.split_data(df, n_mfcc, audio_length, append=False)
