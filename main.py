@@ -257,13 +257,12 @@ if __name__ == "__main__":
         RAVDESS = RAVDESS_Preprocessor(seed=100, n_mfcc=30)
         #RAVDESS.rearrange()
         df = RAVDESS.mfcc_conversion()
-        male_labels = ["male_angry", "male_disgust", "male_fear", "male_happy", "male_neutral", "male_sad",
-                       "male_surprised"]
+        male_labels = ["male_angry", "male_disgust", "male_fear", "male_happy", "male_neutral", "male_sad", "male_surprised"]
         df_males = df.loc[df["label"].isin(male_labels)] #only males
         df_females = df[~df["label"].isin(male_labels)]  #only females
         df = RAVDESS.augment(df_males, frac=1)
         df = pd.concat([df,df_females],ignore_index=True)
-        le = RAVDESS.split_data(df, le=le, append=False)
+        le = RAVDESS.split_data(df, le=le, append=False, equalize=False)
 
         """
         print("Processing SAVEE dataset")
