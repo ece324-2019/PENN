@@ -189,7 +189,7 @@ class Preprocessor(object):
         return df
 
     """ Making datasets """
-    def split_data(self, df, le=None, append=True):
+    def split_data(self, df, le=None, append=True, equalize=True):
         
         # Integer encoding Labels and replace category labels
         if le == None:
@@ -230,10 +230,11 @@ class Preprocessor(object):
             Data_Splits["validation"][Mapping[str(int_category)]] = valid_category_df
         
         # getting equal numbers for classes
-        for dataset in Data_Splits:
-            min_class_size = min([df.shape[0] for df in Data_Splits[dataset].values()])
-            for category in Data_Splits[dataset]:
-                Data_Splits[dataset][category] = Data_Splits[dataset][category].sample(n=min_class_size, random_state=self.seed)
+        if equalize:
+            for dataset in Data_Splits:
+                min_class_size = min([df.shape[0] for df in Data_Splits[dataset].values()])
+                for category in Data_Splits[dataset]:
+                    Data_Splits[dataset][category] = Data_Splits[dataset][category].sample(n=min_class_size, random_state=self.seed)
 
         # printing amount of data in each category
         for dataset in Data_Splits:
