@@ -8,7 +8,7 @@ import wave
 
 # Manipulate model
 import torch
-import torch.nn as nn
+from torch.nn as Softmax
 
 # Manipulate data
 import pandas as pd
@@ -95,7 +95,11 @@ if __name__ == "__main__":
     # load model
     model_name = "cnn"
     model = torch.load(f"{model_name}.pt")
-    prediction = nn.Softmax(dim=0)( model(MFCC.float()) )
+    
+    # Get prediction and softmax to turn into probability
+    prediction = Softmax(dim=0)( model(MFCC.float()) )
+    
+    # Display nicely
     print()
     for i, pred in enumerate(prediction):
         print(f"{Metadata['mapping'][str(i)]}:\t{pred:.4f}")

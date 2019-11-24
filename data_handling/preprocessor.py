@@ -80,7 +80,6 @@ class Preprocessor(object):
 
     def mfcc_conversion(self):
         
-        print("Creating Dataframes")
         df_mfcc = pd.DataFrame(columns=["feature"])
         df_label = pd.DataFrame(columns=["label", "actor", "length"])
 
@@ -92,7 +91,7 @@ class Preprocessor(object):
         cnt = 0 # can't use enumerate because we sometimes skip
         
         # loop through all files
-        print("Iterating over files")
+        print("Converting to MFCC Representation")
         for f in fname_list:
             
             # get the file name, part is a list with the important info of each file
@@ -346,32 +345,3 @@ class Preprocessor(object):
         print(f"{self.dataset} processing complete")
         print()
         return le
-    
-    def normalize(self):
-        
-        # normalizing training data
-        train_data = pd.read_csv(f"{self.ROOT}/data/train_data.tsv", sep='\t', index_col=0)
-        mean = train_data.mean(axis=0)
-        std = train_data.std(axis=0)
-        train_data = (train_data - mean)/std
-        train_data.to_csv(path_or_buf=f"{self.ROOT}/data/train_data.tsv", sep='\t', mode='w', index=True, header=True)
-
-        # normalizing all other data with the training mean and std
-        valid_data = pd.read_csv(f"{self.ROOT}/data/valid_data.tsv", sep='\t', index_col=0)
-        valid_data = (valid_data - mean)/std
-        valid_data.to_csv(path_or_buf=f"{self.ROOT}/data/valid_data.tsv", sep='\t', mode='w', index=True, header=True)
-
-        test_data = pd.read_csv(f"{self.ROOT}/data/test_data.tsv", sep='\t', index_col=0)
-        test_data = (test_data - mean)/std
-        test_data.to_csv(path_or_buf=f"{self.ROOT}/data/test_data.tsv", sep='\t', mode='w', index=True, header=True)
-
-        overfit_data = pd.read_csv(f"{self.ROOT}/data/overfit_data.tsv", sep='\t', index_col=0)
-        overfit_data = (overfit_data - mean)/std
-        overfit_data.to_csv(path_or_buf=f"{self.ROOT}/data/overfit_data.tsv", sep='\t', mode='w', index=True, header=True)
-
-        # saving mean and std deviation
-        Metadata = json.load(open(f"{self.ROOT}/data/Metadata.json", "r"))
-        Metadata["mean"] = mean.tolist()
-        Metadata["std"] = std.tolist()
-        with open(f"{self.ROOT}/data/Metadata.json", "w+") as g:
-            json.dump(Metadata, g, indent=4)

@@ -3,9 +3,6 @@ from args import get_args
 
 # preprocessing
 from data_handling.load_data import *
-from data_handling.RAVDESS_preprocessor import RAVDESS_Preprocessor
-from data_handling.SAVEE_preprocessor import SAVEE_Preprocessor
-from data_handling.TESS_preprocessor import TESS_Preprocessor
 
 # models
 from baseline.model import MLP, Average
@@ -22,16 +19,6 @@ from sklearn.metrics import confusion_matrix, accuracy_score, classification_rep
 from utils import *
 
 import json
-
-def process_datasets(*dataset_processors):
-    le = None
-    append = False
-    for DATASET in dataset_processors:
-        print("Processing", DATASET.dataset)
-        df, n_mfcc, audio_length = DATASET.mfcc_conversion()
-        le = DATASET.split_data(df, n_mfcc, audio_length, le=le, append=append)
-        append = True
-        print(n_mfcc, audio_length)
 
 def evaluate(model, data_loader, loss_fnc):
     running_loss = 0.0
@@ -248,51 +235,8 @@ def main(args):
     plot_confusion_matrix(results, list(Metadata["mapping"].values()))
 
 if __name__ == "__main__":
+    # get commandline arguments
     args = get_args()
-    
-    if args.preprocess:
-        le = None
 
-        print("Processing RAVDESS dataset")
-        RAVDESS = RAVDESS_Preprocessor(seed=100, n_mfcc=30)
-        #RAVDESS.rearrange()
-        df = RAVDESS.mfcc_conversion()
-        male_labels = ["male_angry", "male_disgust", "male_fear", "male_happy", "male_neutral", "male_sad", "male_surprised"]
-        df_males = df.loc[df["label"].isin(male_labels)] #only males
-        df_females = df[~df["label"].isin(male_labels)]  #only females
-        df = RAVDESS.augment(df_males, frac=0.65)
-        df = pd.concat([df,df_females],ignore_index=True)
-        le = RAVDESS.split_data(df, le=le, append=False, equalize=False)
-
-        """
-        print("Processing SAVEE dataset")
-        SAVEE = SAVEE_Preprocessor(seed=100, n_mfcc=30)
-        #SAVEE.rearrange()
-        df = SAVEE.mfcc_conversion()
-        df = SAVEE.augment(df, frac=1)
-        le = SAVEE.split_data(df, le=le, append=False)
-        """
-
-        """
-        print("Processing TESS dataset")
-        TESS = TESS_Preprocessor(seed=100, n_mfcc=30)
-        #TESS.rearrange()
-        df = TESS.mfcc_conversion()
-        #df = TESS.augment(df, frac=1)
-        le = TESS.split_data(df, le=le, append=False)
-        """
-
-        """ 
-        data preprocessing 
-        RAVDESS = RAVDESS_Preprocessor(seed=100)
-        SAVEE = SAVEE_Preprocessor(seed=100)
-        TESS = TESS_Preprocessor(seed=100)
-        #RAVDESS.rearrange()
-        #SAVEE.rearrange()
-        #TESS.rearrange()
-        #process_datasets(RAVDESS, SAVEE, TESS)
-        df, n_mfcc, audio_length = TESS.mfcc_conversion()
-        le = TESS.split_data(df, n_mfcc, audio_length, le=None, append=False)
-        """
-    else:
-        main(args)
+    # run main program
+    main(args)
