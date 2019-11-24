@@ -8,7 +8,7 @@
         "01": "speech",
         "02": "song"
     },
-    "_emotion": {
+    "emotion": {
         "01": "neutral",
         "02": "neutral",
         "03": "happy",
@@ -18,7 +18,7 @@
         "07": "disgust",
         "08": "surprised"
     },
-    "emotion": {
+    "_emotion": {
         "01": "neutral",
         "02": "calm",
         "03": "happy",
@@ -28,7 +28,7 @@
         "07": "disgust",
         "08": "surprised"
     },
-    "_emotion": {
+    "__emotion": {
         "01": "neutral",
         "02": "neutral",
         "03": "strong",

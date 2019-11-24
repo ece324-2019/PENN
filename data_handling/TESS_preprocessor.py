@@ -24,19 +24,23 @@ class TESS_Preprocessor(Preprocessor):
     def rearrange(self):    
         dir_list = self.create_new_data_directory()
 
-        for actor_emotion in dir_list: #for loops through the folders
-            fname_list = os.listdir(os.path.join(self.original_path, actor_emotion))
-            fname_list.sort()
-            for f in fname_list:
-                shutil.copy(os.path.join(self.original_path, actor_emotion, f), self.path)
-                
-                new_f = f.replace('_', '-', 2)
-                # error in the dataset
-                if new_f == "OA-bite-neutral.wav":
-                    new_f = "OAF-bite-neutral.wav"
-                
-                os.rename( os.path.join(self.path, f), os.path.join(self.path, new_f) )
-        
+        try:
+            for actor_emotion in dir_list: #for loops through the folders
+                fname_list = os.listdir(os.path.join(self.original_path, actor_emotion))
+                fname_list.sort()
+                for f in fname_list:
+                    shutil.copy(os.path.join(self.original_path, actor_emotion, f), self.path)
+                    
+                    new_f = f.replace('_', '-', 2)
+                    # error in the dataset
+                    if new_f == "OA-bite-neutral.wav":
+                        new_f = "OAF-bite-neutral.wav"
+                    
+                    os.rename( os.path.join(self.path, f), os.path.join(self.path, new_f) )
+        except Exception as e:
+            # data files already in the correct configuration
+            pass
+
         self.check_dataset_created()
     
     def parse_file_name(self, f_name):

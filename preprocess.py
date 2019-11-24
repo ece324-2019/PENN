@@ -44,29 +44,23 @@ if __name__ == "__main__":
 
     print("Processing RAVDESS dataset")
     RAVDESS = RAVDESS_Preprocessor(seed=100, n_mfcc=30)
-    #RAVDESS.rearrange()
+    RAVDESS.rearrange()
     df = RAVDESS.mfcc_conversion()
-
-    # only augmenting male data to keep dataset balanced
-    male_labels = [f"male_{emotion.lower()}" for emotion in RAVDESS.Metadata["emotion"].values()]
-    df_males = df.loc[df["label"].isin(male_labels)] #only males
-    df_females = df[~df["label"].isin(male_labels)]  #only females
-    df_males = RAVDESS.augment(df_males, frac=0.65)
-    df = pd.concat([df_males, df_females], ignore_index=True)
-
+    df = RAVDESS.augment(df, frac=1)
     le = RAVDESS.split_data(df, le=le, append=False, equalize=False)
 
     print("Processing SAVEE dataset")
     SAVEE = SAVEE_Preprocessor(seed=100, n_mfcc=30)
-    #SAVEE.rearrange()
+    SAVEE.rearrange()
     df = SAVEE.mfcc_conversion()
     df = SAVEE.augment(df, frac=1)
     le = SAVEE.split_data(df, le=le, append=True)
 
     print("Processing TESS dataset")
     TESS = TESS_Preprocessor(seed=100, n_mfcc=30)
-    #TESS.rearrange()
+    TESS.rearrange()
     df = TESS.mfcc_conversion()
+    df = TESS.augment(df, frac=1)
     le = TESS.split_data(df, le=le, append=True)
 
     # Normalize all data (not just the TESS data)

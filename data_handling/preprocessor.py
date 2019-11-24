@@ -42,7 +42,7 @@ class Preprocessor(object):
                 print("Data files has already been reordered")
             except:
                 print("The dataset has not been imported")
-            return None
+            return None    # dataset already exists
 
         # sorting directory list so actors are in order
         dir_list.sort()
@@ -76,7 +76,7 @@ class Preprocessor(object):
             # '.DS_Store' not in directory
             pass
         
-        print(f"{len(dir_list)} total data files now in the directory {self.path}")
+        print(f"{self.path} contains {len(dir_list)} total data files")
 
     def mfcc_conversion(self):
         

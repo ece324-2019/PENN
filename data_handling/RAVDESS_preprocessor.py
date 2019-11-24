@@ -13,7 +13,7 @@ class RAVDESS_Preprocessor(Preprocessor):
         Preprocessor.__init__(self, seed=seed, n_mfcc=n_mfcc)
 
         self.extra += ['audio_speech_actors_01-24']
-        self.test_actors = ['01', '02', '04']       # 2 female to offset SAVEE
+        self.test_actors = ['07', '10', '12', '24']     # 1 male and 3 females, other male will come from SAVEE
 
         self.original_path = os.path.join(self.ROOT, "raw_data", raw_data_dir)
         self.path = os.path.join(self.ROOT, "raw_data", data_dir)
@@ -21,14 +21,18 @@ class RAVDESS_Preprocessor(Preprocessor):
         metadata_path = os.path.join(self.ROOT, "raw_data", metadata_file)
         self.Metadata = json.load(open(metadata_path, "r"))
     
-    def rearrange(self):    
+    def rearrange(self):
         dir_list = self.create_new_data_directory()
 
-        for actor in dir_list: #for loops through the actor
-            fname_list = os.listdir(os.path.join(self.original_path, actor))
-            fname_list.sort()
-            for f in fname_list:
-                shutil.copy(os.path.join(self.original_path, actor, f), self.path)
+        try:
+            for actor in dir_list: # for loops through the actor
+                fname_list = os.listdir(os.path.join(self.original_path, actor))
+                fname_list.sort()
+                for f in fname_list:
+                    shutil.copy(os.path.join(self.original_path, actor, f), self.path)
+        except Exception as e:
+            # data files already in the correct configuration
+            pass
         
         self.check_dataset_created()
 

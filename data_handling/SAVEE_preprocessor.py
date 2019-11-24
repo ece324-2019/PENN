@@ -27,14 +27,18 @@ class SAVEE_Preprocessor(Preprocessor):
     def rearrange(self):    
         dir_list = self.create_new_data_directory()
 
-        for actor in dir_list: #for loops through the actor
-            fname_list = os.listdir(os.path.join(self.original_path, actor))
-            fname_list.sort()
-            for f in fname_list:
-                shutil.copy(os.path.join(self.original_path, actor, f), self.path)
-                new_f = f"{actor}-{f[:-6]}-{f[-6:]}"
-                os.rename( os.path.join(self.path, f), os.path.join(self.path, new_f) )
-        
+        try:
+            for actor in dir_list: #for loops through the actor
+                fname_list = os.listdir(os.path.join(self.original_path, actor))
+                fname_list.sort()
+                for f in fname_list:
+                    shutil.copy(os.path.join(self.original_path, actor, f), self.path)
+                    new_f = f"{actor}-{f[:-6]}-{f[-6:]}"
+                    os.rename( os.path.join(self.path, f), os.path.join(self.path, new_f) )
+        except Exception as e:
+            # data files already in the correct configuration
+            pass
+
         self.check_dataset_created()
 
     def parse_file_name(self, f_name):
