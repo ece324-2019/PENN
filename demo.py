@@ -6,9 +6,18 @@ from pydub.playback import play
 import pyaudio
 import wave
 
+# Manipulate model
+import torch
+import torch.nn as nn
+
 # Manipulate data
 import pandas as pd
 import numpy as np
+
+import os
+import json
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 def record(output_file_name, length=2.5, sample_rate=44100, channels=2, audio_format=pyaudio.paInt16, chunk=1024):
     audio = pyaudio.PyAudio()
@@ -20,9 +29,9 @@ def record(output_file_name, length=2.5, sample_rate=44100, channels=2, audio_fo
 
     # start recording
     stream = audio.open(format=audio_format, channels=channels, rate=sample_rate, input=True, frames_per_buffer=chunk)
-    print("Recording...")
+    print("\n\nRecording...")
     frames = []
-    for i in range(0, int(sample_rate / chunk * length)):
+    for i in range(int(sample_rate / chunk * length)+1):
         data = stream.read(chunk)
         frames.append(data)
 
@@ -67,6 +76,30 @@ def mfcc_conversion(file_path, sr=44100, n_mfcc=30, duration=2.5):
     return MFCC, n_mfcc, audio_length
 
 if __name__ == "__main__":
+    
     record("demo.wav")
     MFCC, n_mfcc, audio_length = mfcc_conversion("demo.wav")
-    # load model and get predictions ...
+
+    # Metadata file
+    Metadata = json.load(open(f"{ROOT}/data/Metadata.json", "r"))
+
+    # normalizing the data with the training mean and std
+    
+    MFCC = MFCC.flatten()
+    MFCC = (MFCC - np.array(Metadata["mean"])) / np.array(Metadata["std"])
+    MFCC = MFCC.reshape((n_mfcc, audio_length))
+    
+    # getting data in proper type
+    MFCC = torch.from_numpy(MFCC).reshape(1, n_mfcc, audio_length)
+
+    # load model
+    model_name = "cnn"
+    model = torch.load(f"{model_name}.pt")
+    prediction = nn.Softmax(dim=0)( model(MFCC.float()) )
+    print()
+    for i, pred in enumerate(prediction):
+        print(f"{Metadata['mapping'][str(i)]}:\t{pred:.4f}")
+    print()
+    p = int(torch.argmax(prediction, dim=0))
+    print(f"Prediction: {Metadata['mapping'][str(p)]}")
+    
