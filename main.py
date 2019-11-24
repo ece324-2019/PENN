@@ -204,7 +204,7 @@ def main(args):
 
     # summary statistics
     print("Model Summary:")
-    #summary(model, input_size=(1, n_mfcc, audio_length))
+    summary(model, input_size=(n_mfcc, audio_length))
     print()
     print()
     
@@ -220,16 +220,15 @@ def main(args):
     
     predictions = predictions.detach().numpy().astype(int)
     labels = labels.detach().numpy().astype(int)
-    results = confusion_matrix(labels, predictions) 
-    print('Confusion Matrix :')
-    print(results) 
-    """
-    print('Accuracy Score :', accuracy_score(labels, predictions))
+    CM = confusion_matrix(labels, predictions) 
+    print("Confusion Matrix :")
+    print(CM) 
+    print("Accuracy Score :")
+    print(accuracy_score(labels, predictions))
     print()
     print()
-    print('Report : ')
-    print(classification_report(labels, predictions))
-    """
+    #print("Report : ")
+    #print(classification_report(CM, predictions))
 
     # plotting confusion matrix nicer
     plot_confusion_matrix(results, list(Metadata["mapping"].values()))
