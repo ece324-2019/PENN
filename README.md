@@ -1,5 +1,35 @@
 # PENN
 
+## Repository Structure
+```
+└── PENN
+  ├── Baseline
+  |   └── model.py
+  ├── CNN
+  |   └── model.py
+  ├── RNN
+  |   └── model.py
+  ├── data_handling
+  |   ├── load_data.py
+  |   ├── Preprocessor.py
+  |   ├── RAVDESS_preprocessor.py
+  |   ├── SAVEE_preprocessor.py
+  |   ├── TESS_preprocessor.py
+  |   └── Personal_preprocessor.py
+  ├── raw_data
+  |   ├── RAVDESS_metadata.json
+  |   ├── SAVEE_metadata.json
+  |   ├── TESS_metadata.json
+  |   └── Personal_metadata.json
+  ├── __init__.py
+  ├── preprocess.py
+  ├── main.py
+  ├── demo.py
+  ├── args.py
+  ├── utils.py
+  └── trained_model.pt
+```
+
 Creating virtual environment with [Anaconda](https://www.anaconda.com/distribution/)
 ```
 $ conda create --name penn python=3.7
