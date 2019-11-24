@@ -285,15 +285,6 @@ class Preprocessor(object):
         overfit_label = overfit_data[["label", "length"]]
         overfit_data = overfit_data.drop(["label", "actor", "length"], axis=1)
 
-        # Need to normalize data, normalize other based off of normalization of training data
-        mean = np.mean(train_data, axis=1)
-        std = np.std(train_data, axis=1)
-        train_data = (train_data - mean)/std
-        valid_data = (valid_data - mean)/std
-        if len(self.test_actors) != 0:
-            test_data = (test_data - mean)/std
-        overfit_data = (overfit_data - mean)/std
-
         # creating a directory we will need later
         try:
             os.mkdir(f"{self.ROOT}/data")
@@ -321,14 +312,33 @@ class Preprocessor(object):
             max_audio_length = max([train_label["length"].max(), valid_label["length"].max(), test_label["length"].max()])
         except:
             max_audio_length = max([train_label["length"].max(), valid_label["length"].max()])
-        
+
+        # getting total counts for each dataset
+        total_train = train_data.shape[0]
+        total_valid = valid_data.shape[0]
+        total_test = test_data.shape[0]
+
         # saving relavent metadata
         Metadata = {}
         if append:
             Metadata = json.load(open(f"{self.ROOT}/data/Metadata.json", "r"))
+            
+            # updating max audio length
             Metadata["max audio length"] = max(Metadata["max audio length"], max_audio_length)
+
+            # updating totals
+            Metadata["total training data"] += total_train
+            Metadata["total validation data"] += total_valid
+            Metadata["total test data"] += total_test
+
         else:
-            Metadata = {"mapping" : Mapping, "n_mfcc" : self.n_mfcc, "max audio length" : max_audio_length, "mean" : mean.tolist(), "std" : std.tolist()}
+            Metadata = {    "mapping" : Mapping, 
+                            "n_mfcc" : self.n_mfcc, 
+                            "max audio length" : max_audio_length,
+                            "total training data" : total_train,
+                            "total validation data" : total_valid,
+                            "total test data" : total_test
+                        }
         
         with open(f"{self.ROOT}/data/Metadata.json", "w+") as g:
             json.dump(Metadata, g, indent=4)
@@ -337,3 +347,31 @@ class Preprocessor(object):
         print()
         return le
     
+    def normalize(self):
+        
+        # normalizing training data
+        train_data = pd.read_csv(f"{self.ROOT}/data/train_data.tsv", sep='\t', index_col=0)
+        mean = train_data.mean(axis=0)
+        std = train_data.std(axis=0)
+        train_data = (train_data - mean)/std
+        train_data.to_csv(path_or_buf=f"{self.ROOT}/data/train_data.tsv", sep='\t', mode='w', index=True, header=True)
+
+        # normalizing all other data with the training mean and std
+        valid_data = pd.read_csv(f"{self.ROOT}/data/valid_data.tsv", sep='\t', index_col=0)
+        valid_data = (valid_data - mean)/std
+        valid_data.to_csv(path_or_buf=f"{self.ROOT}/data/valid_data.tsv", sep='\t', mode='w', index=True, header=True)
+
+        test_data = pd.read_csv(f"{self.ROOT}/data/test_data.tsv", sep='\t', index_col=0)
+        test_data = (test_data - mean)/std
+        test_data.to_csv(path_or_buf=f"{self.ROOT}/data/test_data.tsv", sep='\t', mode='w', index=True, header=True)
+
+        overfit_data = pd.read_csv(f"{self.ROOT}/data/overfit_data.tsv", sep='\t', index_col=0)
+        overfit_data = (overfit_data - mean)/std
+        overfit_data.to_csv(path_or_buf=f"{self.ROOT}/data/overfit_data.tsv", sep='\t', mode='w', index=True, header=True)
+
+        # saving mean and std deviation
+        Metadata = json.load(open(f"{self.ROOT}/data/Metadata.json", "r"))
+        Metadata["mean"] = mean.tolist()
+        Metadata["std"] = std.tolist()
+        with open(f"{self.ROOT}/data/Metadata.json", "w+") as g:
+            json.dump(Metadata, g, indent=4)
