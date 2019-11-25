@@ -38,11 +38,19 @@ class Preprocessor(object):
         except:
             #print(f"{self.original_path} does not exists")
             try:
-                dir_list = os.listdir(self.path)
+                target_dir_list = os.listdir(self.path)
                 print("Data files has already been reordered")
+                return None # dataset already exists
             except:
                 print("The dataset has not been imported")
-            return None    # dataset already exists
+                return None # original dataset does not exist
+
+        try:
+            target_dir_list = os.listdir(self.path)
+            print("Data files has already been reordered")
+            return None # dataset already exists
+        except:
+            pass
 
         # sorting directory list so actors are in order
         dir_list.sort()

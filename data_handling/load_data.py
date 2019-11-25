@@ -10,6 +10,10 @@ import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# setting default tensor type to cuda tensor
+if torch.cuda.is_available():
+    torch.set_default_tensor_type(torch.cuda.FloatTensor)
+
 def get_data(overfit=False):
     
     if overfit:

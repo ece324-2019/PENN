@@ -20,6 +20,10 @@ from utils import *
 
 import json
 
+# setting default tensor type to cuda tensor
+if torch.cuda.is_available():
+    torch.set_default_tensor_type(torch.cuda.FloatTensor)
+
 def evaluate(model, data_loader, loss_fnc):
     running_loss = 0.0
     total_batches = 0.0
@@ -180,6 +184,11 @@ def main(args):
     else:
         raise ValueError(f"Model '{model_name}' does not exist")
 
+    # using GPU
+    if torch.cuda.is_available():
+        model.cuda()
+    
+
     train_iter, valid_iter, test_iter = load_data(  args.batch_size, 
                                                     n_mfcc, 
                                                     overfit=args.overfit
@@ -222,13 +231,8 @@ def main(args):
     labels = labels.detach().numpy().astype(int)
     CM = confusion_matrix(labels, predictions) 
     print("Confusion Matrix :")
-    print(CM) 
-    print("Accuracy Score :")
-    print(accuracy_score(labels, predictions))
+    print(CM)
     print()
-    print()
-    #print("Report : ")
-    #print(classification_report(CM, predictions))
 
     # plotting confusion matrix nicer
     plot_confusion_matrix(CM, list(Metadata["mapping"].values()))

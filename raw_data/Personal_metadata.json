@@ -6,14 +6,15 @@
     "04": "Dude, the game was so close yesterday"
   },
   "emotion": {
-        "01": "neutral",
-        "02": "neutral",
-        "03": "happy",
-        "04": "sad",
-        "05": "angry",
-        "06": "fearful",
-        "07": "disgust",
-        "08": "surprised"
+        "neutral": "neutral",
+        "happy": "happy",
+        "sad": "sad",
+        "angry": "angry",
+        "fear": "fear",
+        "disgust": "disgust",
+        "surprised": "surprised"
     },
-  "gender": "Male"
+  "gender": "Male",
+  "sample rate": 44100,
+  "duration": 2.5
 }

@@ -111,27 +111,6 @@ def plot_MFCC(audio_file_path):
     plt.tight_layout()
     plt.show()
 
-# We did not write this. Obtained from https://stackoverflow.com/questions/38231328/measure-length-of-silence-at-beginning-of-audio-file-wav
-def get_silence(audio, threshold=-80, interval=1):
-    "get length of silence in seconds from a wav file"
-
-    # swap out pydub import for other types of audio
-    song = AudioSegment.from_wav(audio)
-
-    # break into chunks
-    chunks = [song[i:i+interval] for i in range(0, len(song), interval)]
-
-    # find number of chunks with dBFS below threshold
-    silent_blocks = 0
-    for c in chunks:
-        if c.dBFS == float('-inf') or c.dBFS < threshold:
-            silent_blocks += 1
-        else:
-            break
-
-    # convert blocks into seconds
-    return round(silent_blocks * (interval/1000), 3)
-
 
 if __name__ == "__main__":
     
