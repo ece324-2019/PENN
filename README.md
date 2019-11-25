@@ -138,6 +138,11 @@ To train your own model, use the `main.py` file. There are a number of commandli
 * `--overfit`: no parameters --> use the overfit data (for debugging purposes)
 * `--save`: no parameters --> save the model after training
 
+The following are the defaults
+```
+$ python main.py --model cnn --lr 0.01 --batch_size 100 --epochs 50 --eval_every 10
+```
+
 ## Live Demo
 
 Execute
