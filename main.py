@@ -5,7 +5,7 @@ from args import get_args
 from data_handling.load_data import *
 
 # models
-from baseline.model import MLP, Average
+from Baseline.model import MLP, Average
 from CNN.model import CNN
 from RNN.model import RNN
 
@@ -109,8 +109,8 @@ def training_loop(model, train_iter, valid_iter, test_iter, optimizer, loss_fnc,
                 title=model_name)
     
     if save:
-        torch.save(model, f"{model_name.lower()}.pt")
-        print(f"Model saved as '{model_name.lower()}.pt'")
+        torch.save(model, f"trained_model.pt")
+        print(f"Model saved as 'trained_model.pt'")
 
     final_train_loss, final_train_acc = training_error[-1], training_acc[-1]        # Training
     final_valid_loss, final_valid_acc = evaluate(model, valid_iter, loss_fnc)       # Validation
@@ -231,7 +231,7 @@ def main(args):
     #print(classification_report(CM, predictions))
 
     # plotting confusion matrix nicer
-    plot_confusion_matrix(results, list(Metadata["mapping"].values()))
+    plot_confusion_matrix(CM, list(Metadata["mapping"].values()))
 
 if __name__ == "__main__":
     # get commandline arguments

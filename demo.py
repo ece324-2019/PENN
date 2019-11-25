@@ -8,7 +8,7 @@ import wave
 
 # Manipulate model
 import torch
-from torch.nn as Softmax
+from torch.nn import Softmax
 
 # Manipulate data
 import pandas as pd
@@ -93,6 +93,7 @@ if __name__ == "__main__":
     MFCC = torch.from_numpy(MFCC).reshape(1, n_mfcc, audio_length)
 
     # load model
+    #model_name = "trained_model"
     model_name = "cnn"
     model = torch.load(f"{model_name}.pt")
     

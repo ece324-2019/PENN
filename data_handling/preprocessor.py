@@ -78,20 +78,18 @@ class Preprocessor(object):
         
         print(f"{self.path} contains {len(dir_list)} total data files")
 
-    def mfcc_conversion(self):
-        
-        df_mfcc = pd.DataFrame(columns=["feature"])
+    def get_audio_data(self):
+        print("Loading raw audio data...")
+
+        df_audio = pd.DataFrame(columns=["audio"])
         df_label = pd.DataFrame(columns=["label", "actor", "length"])
 
         # generate list of all files within an emotion in order
         fname_list = os.listdir(self.path)
         fname_list.sort()
 
-        audio_length = 0
-        cnt = 0 # can't use enumerate because we sometimes skip
-        
+        idx = 0 # can't use enumerate because we sometimes skip
         # loop through all files
-        print("Converting to MFCC Representation")
         for f in fname_list:
             
             # get the file name, part is a list with the important info of each file
@@ -103,24 +101,19 @@ class Preprocessor(object):
             # Convert .wav file to a integer array using Librosa
             audio_file = os.path.join(self.path, f)
             data, _ = librosa.load(audio_file, res_type='kaiser_fast', sr=self.Metadata["sample rate"], duration=self.Metadata["duration"])
-            MFCC = librosa.feature.mfcc(data, sr=self.Metadata["sample rate"], n_mfcc=self.n_mfcc)
-            n_mfcc, audio_length = MFCC.shape   # (30, 216) for default inputs
 
-            # Add mfcc representation of recording as well as its gender and emotion label to panda frames
-            df_mfcc.loc[cnt] = [ MFCC.flatten() ]
-            df_label.loc[cnt] = [ f"{gender.lower()}_{emotion.lower()}", actor, audio_length ]
-            cnt += 1
-            
-        print("Loaded data into dataframe\n")
-
-        # need to get rid of the missing values (NA) in the feature column so have to split that up
-        expanded_mfcc = pd.DataFrame(df_mfcc["feature"].values.tolist())
-        expanded_mfcc = expanded_mfcc.fillna(0)
+            # Add to pandas dataframes
+            df_audio.loc[idx] = [ data ]
+            df_label.loc[idx] = [ f"{gender.lower()}_{emotion.lower()}", actor, 0 ]
+            idx += 1
         
-        # Concatenate into a single dataframe
-        df = pd.concat([df_label, expanded_mfcc], axis=1)
+        # removing header from dataframe (makes it nicer when we want to load stuff with out model)
+        df_audio = pd.DataFrame(df_audio["audio"].values.tolist())
 
-        return df
+        # replace NaNs with 0's
+        df_audio= df_audio.fillna(0)
+
+        return pd.concat([df_label, df_audio], axis=1)
 
 
     """ Augmentation """
@@ -141,10 +134,7 @@ class Preprocessor(object):
         return data_array
 
     def shift(self, data_array):
-        # Shifts the data left or right randomly depending on the low and high value. 
-        # The audio will roll around like the lin alg quiz question. 
-        # I though that was bad as the sentence wont make sense but since we dont even look at the words so this is probably good.
-        # ...wut ^^
+        # Shifts the data left or right randomly depending on the low and high value.
         s_range = int( 500 * np.random.uniform(low=-90, high=90) )
         return np.roll(data_array, s_range)
 
@@ -155,6 +145,10 @@ class Preprocessor(object):
         return data_array * dyn_change
     
     def augment(self, df, frac=0.1):
+        print("Augmenting...")
+        if frac <= 0:
+            return df
+
         # sampling a fraction of the total data
         pitch_data = df.sample(frac=frac)
         white_noise_data = df.sample(frac=frac)
@@ -187,9 +181,38 @@ class Preprocessor(object):
         print()
         return df
 
+
+    """ Mel-Frequency Cepstrum Conversion """
+    def mfcc_conversion(self, df):
+        print("Converting to MFCC Representation...")
+        
+        df_mfcc = pd.DataFrame(columns=["audio"])
+        df_label = df[["label", "actor", "length"]]
+        np_data = df.drop(["label", "actor", "length"], axis=1).to_numpy()
+
+        for i, data in enumerate(np_data):
+            
+            # actual MFCC conversion
+            MFCC = librosa.feature.mfcc(np.asfortranarray(data), sr=self.Metadata["sample rate"], n_mfcc=self.n_mfcc)
+            n_mfcc, audio_length = MFCC.shape   # (30, 216) for default inputs
+
+            # Add mfcc representation of recording as well as its gender and emotion label to panda frames
+            df_mfcc.loc[i] = [ MFCC.flatten() ]
+            df_label.loc[i]["length"] = audio_length
+
+        # removing header from dataframe (makes it nicer when we want to load stuff with out model)
+        expanded_mfcc = pd.DataFrame(df_mfcc["audio"].values.tolist())
+
+        # replace NaNs with 0's
+        expanded_mfcc = expanded_mfcc.fillna(0)
+
+        return pd.concat([df_label, expanded_mfcc], axis=1)
+    
+
     """ Making datasets """
     def split_data(self, df, le=None, append=True, equalize=True):
-        
+        print("Splitting Data...")
+
         # Integer encoding Labels and replace category labels
         if le == None:
             le = LabelEncoder()
@@ -236,6 +259,7 @@ class Preprocessor(object):
                     Data_Splits[dataset][category] = Data_Splits[dataset][category].sample(n=min_class_size, random_state=self.seed)
 
         # printing amount of data in each category
+        print()
         for dataset in Data_Splits:
             print(f"{dataset.title()} Data")
             total = 0
@@ -283,6 +307,8 @@ class Preprocessor(object):
             overfit_data = pd.concat( (overfit_data, category_df), axis=0 )
         overfit_label = overfit_data[["label", "length"]]
         overfit_data = overfit_data.drop(["label", "actor", "length"], axis=1)
+
+        print("Saving Data...")
 
         # creating a directory we will need later
         try:
