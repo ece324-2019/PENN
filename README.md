@@ -1,4 +1,5 @@
 # PENN
+**P**rediction **E**motions using a **N**eural **N**etwork
 
 ## Table of Contents
 
