@@ -20,6 +20,10 @@
   |   ├── TESS_preprocessor.py
   |   └── Personal_preprocessor.py
   ├── raw_data
+  |   ├── ravdess-emotional-speech-audio
+  |   ├── AudioData
+  |   ├── TESS Toronto emotional speech set data
+  |   ├── Personal
   |   ├── RAVDESS_metadata.json
   |   ├── SAVEE_metadata.json
   |   ├── TESS_metadata.json
