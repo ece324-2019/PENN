@@ -144,12 +144,16 @@ test.py
 # dataset
 data
 raw_data/RAVDESS
+raw_data/ravdess-emotional-speech-audio
 raw_data/SAVEE
+raw_data/AudioData
+raw_data/TESS
+raw_data/TESS Toronto emotional speech set data
+raw_data/Personal_Original
 
 # data files
 *.tsv
 *.csv
-*.wav
 *.raw
 *.mp3
 *.txt
