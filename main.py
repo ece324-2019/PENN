@@ -43,6 +43,22 @@ def evaluate(model, data_loader, loss_fnc):
 
     return float(running_loss) / total_batches, float(correct) / total_samples
 
+def get_predictions_and_labels(model, data_loader):
+    predictions = torch.Tensor()
+    labels = torch.Tensor()
+    for batch, batch_labels, batch_lengths in data_loader:
+        batch_predictions = model(batch.float())
+        batch_predictions = torch.argmax(batch_predictions, dim=1)
+
+        predictions = torch.cat( (predictions, batch_predictions.float()), dim=0 )
+        labels = torch.cat( (labels, batch_labels.float()), dim=0 )
+    
+    predictions = predictions.detach().numpy().astype(int)
+    labels = labels.detach().numpy().astype(int)
+
+    return predictions, labels
+
+
 def training_loop(model, train_iter, valid_iter, test_iter, optimizer, loss_fnc, epochs, batch_size, lr, eval_every, save=False):
     
     model.train()
@@ -116,7 +132,8 @@ def training_loop(model, train_iter, valid_iter, test_iter, optimizer, loss_fnc,
         torch.save(model, f"trained_model.pt")
         print(f"Model saved as 'trained_model.pt'")
 
-    final_train_loss, final_train_acc = training_error[-1], training_acc[-1]        # Training
+    model.eval()
+    final_train_loss, final_train_acc = evaluate(model, train_iter, loss_fnc)       # Training
     final_valid_loss, final_valid_acc = evaluate(model, valid_iter, loss_fnc)       # Validation
     final_test_loss, final_test_acc = evaluate(model, test_iter, loss_fnc)          # Testing
     
@@ -217,25 +234,19 @@ def main(args):
     print()
     print()
     
-    predictions = torch.Tensor()
-    labels = torch.Tensor()
+    train_predictions, train_labels = get_predictions_and_labels(model, train_iter)
+    valid_predictions, valid_labels = get_predictions_and_labels(model, valid_iter)
+    test_predictions, test_labels = get_predictions_and_labels(model, test_iter)
 
-    for batch, batch_labels, batch_lengths in test_iter:
-        batch_predictions = model(batch.float())
-        batch_predictions = torch.argmax(batch_predictions, dim=1)
+    # plotting confusion matrices
+    CM = confusion_matrix(train_labels, train_predictions) 
+    plot_confusion_matrix(CM, list(Metadata["mapping"].values()), title="Training Data")
 
-        predictions = torch.cat( (predictions, batch_predictions.float()), dim=0 )
-        labels = torch.cat( (labels, batch_labels.float()), dim=0 )
-    
-    predictions = predictions.detach().numpy().astype(int)
-    labels = labels.detach().numpy().astype(int)
-    CM = confusion_matrix(labels, predictions) 
-    print("Confusion Matrix :")
-    print(CM)
-    print()
+    CM = confusion_matrix(valid_labels, valid_predictions) 
+    plot_confusion_matrix(CM, list(Metadata["mapping"].values()), title="Validation Data")
 
-    # plotting confusion matrix nicer
-    plot_confusion_matrix(CM, list(Metadata["mapping"].values()))
+    CM = confusion_matrix(test_labels, test_predictions) 
+    plot_confusion_matrix(CM, list(Metadata["mapping"].values()), title="Testing Data")
 
 if __name__ == "__main__":
     # get commandline arguments

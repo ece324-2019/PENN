@@ -111,15 +111,23 @@ def plot_MFCC(audio_file_path):
     plt.tight_layout()
     plt.show()
 
+def play_wav(audio_path):
+    sound = AudioSegment.from_wav(audio_path)
+    play(sound)
+def wav_to_mp3(audio_file_path):
+    clip = AudioSegment.from_wav(audio_file_path)
+    clip.export("test1.mp3", format="mp3")
 
 if __name__ == "__main__":
-    
-    #audio_file_path = "./raw_data/SAVEE/DC-a-08.wav"
-    audio_file_path = "./raw_data/RAVDESS/03-01-03-01-01-01-17.wav"
-    print(get_silence(audio_file_path, threshold=0))
+    L = ["./raw_data/RAVDESS/03-01-06-01-01-01-17.wav", "./raw_data/TESS/YAF-which-angry.wav"]
+    audio_file_path = "./raw_data/RAVDESS/03-01-05-02-01-01-17.wav"
+    play_wav(L[1])
+    #audio_file_path = "./raw_data/RAVDESS/03-01-06-01-01-01-15.wav"
+    #print(get_silence(audio_file_path, threshold=0))
     #plot_waveform(audio_file_path)
     #plot_MFCC(audio_file_path)
-    audio = AudioSegment.from_wav(audio_file_path)
-    print(len(audio) / 1000)
-    wav_to_mp3(audio_file_path)
+    #audio = AudioSegment.from_wav(audio_file_path)
+    #print(len(audio) / 1000)
+    #wav_to_mp3(l[1])
+
     
