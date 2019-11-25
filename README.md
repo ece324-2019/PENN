@@ -5,6 +5,7 @@
 ## Repository Structure
 ```
 └── PENN
+  ├── __init__.py
   ├── Baseline
   |   └── model.py
   ├── CNN
@@ -23,7 +24,6 @@
   |   ├── SAVEE_metadata.json
   |   ├── TESS_metadata.json
   |   └── Personal_metadata.json
-  ├── __init__.py
   ├── preprocess.py
   ├── main.py
   ├── demo.py
