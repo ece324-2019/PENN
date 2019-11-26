@@ -13,6 +13,7 @@
   * [About the TESS Dataset](#about-the-tess-dataset)
 * [Training the Model](#training-the-model)
 * [Live Demo](#live-demo)
+* [Fine Tuning the Model](#fine-tuning-the-model)
 
 
 ## Repository Structure
@@ -166,4 +167,8 @@ Execute
 $ python demo.py
 ```
 
-It will record a sample from your computer microphone, run that audio through the model, and produce the model's prediction
+It will record a sample from your computer microphone, run that audio through the model, and produce the model's prediction. However, this will most likely not work, and the reason is because your computer microphone processes audio data slightly differently than the microphones of the RAVDESS, SAVEE, and TESS datasets. This is where fine-tuning comes in.
+
+## Fine-Tuning the Model
+
+We personally recorded 48 samples of audio emotion data on our MacBooks. These are found in the `raw_data/Personal` directory. In fine tuning, we keep the weights in the convolutional layers frozen and re-initialize the fully-connected layer. Then, we run the model through the training loop again, but only allowing the final linear layer to change. This allows the model to learn how our microphones process data. 
