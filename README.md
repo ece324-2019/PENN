@@ -3,6 +3,18 @@
 
 ## Table of Contents
 
+## Table of Contents
+* [Repository Structure](#repository-structure)
+* [Setting Up Environment](#setting-up-environment)
+  * [Software Required](#software-required)
+* [Downloading Data](#downloading-data)
+  * [About the RAVDESS Dataset](#about-the-ravdess-dataset)
+  * [About the SAVEE Dataset](#about-the-savee-dataset)
+  * [About the TESS Dataset](#about-the-tess-dataset)
+* [Training the Model](#training-the-model)
+* [Live Demo](#live-demo)
+
+
 ## Repository Structure
 ```
 └── PENN
@@ -48,7 +60,7 @@ Installing other Python packages required
 $ pip install -r requirements.txt
 ```
 
-### Software required
+### Software Required
 The required software should be installed by using the command above and `requirements.txt`. However, if this doesn't work here is how you can download the software manually using anaconda.
 
 Installing [PyTorch](https://pytorch.org/)
