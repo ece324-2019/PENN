@@ -1,37 +1,26 @@
+# commanline arguments
+from args import get_args
+
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 from torchsummary import summary
 
 from data_handling.Personal_preprocessor import Personal_Preprocessor
-from main import training_loop
+from utils.training import *
 
 import numpy as np
 import pandas as pd
 
 # Plots and summary statistics
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
-from utils import *
 
 import os
 import json
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
-def transfer_learning():
-    
-    model = torch.load("cnn.pt")        # loads model with all parameters frozen
-    model.fc = nn.Linear(3*35, 14)      # re-initialize last linear layer
-
-    hyperparameters = {
-                    "optimizer" : torch.optim.Adam,
-                    "loss_fnc" : nn.CrossEntropyLoss(),
-                    "epochs" : 20,
-                    "batch_size" : 10,
-                    "lr" : 0.001,
-                    "eval_every" : 1
-    }
-
+def get_personal_iters(batch_size):
     # preprocessing the personally collected data
     Personal = Personal_Preprocessor(seed=100, n_mfcc=30)
     Personal.rearrange()
@@ -50,50 +39,95 @@ def transfer_learning():
     valid_data = torch.from_numpy( valid_data.to_numpy(dtype=np.float32) ).reshape(-1, Personal.n_mfcc, max(valid_length))
 
     # creating iterators
-    train_iter = DataLoader(TensorDataset(train_data, train_label, train_length), batch_size=hyperparameters["batch_size"], shuffle=True)
-    valid_iter = DataLoader(TensorDataset(valid_data, valid_label, valid_length), batch_size=hyperparameters["batch_size"])
+    train_iter = DataLoader(TensorDataset(train_data, train_label, train_length), batch_size=batch_size, shuffle=True)
+    valid_iter = DataLoader(TensorDataset(valid_data, valid_label, valid_length), batch_size=batch_size)
     test_iter = valid_iter      # not enough data to have a separate dataset
+
+    return train_iter, valid_iter, test_iter
+
+def fine_tune(model_name, save_as=None):
+
+    model = torch.load(f"{model_name}.pt")                    # loads model with all parameters frozen
+    model.fc = nn.Linear(3*model.n_kernels, model.n_classes)    # re-initialize last linear layer
+
+    hyperparameters = {
+                    "optimizer" : torch.optim.Adam,
+                    "loss_fnc" : nn.CrossEntropyLoss(),
+                    "epochs" : 20,
+                    "batch_size" : 10,
+                    "lr" : 0.001,
+                    "eval_every" : 1
+    }
+
+    train_iter, valid_iter, test_iter = get_personal_iters(hyperparameters["batch_size"])
 
     final_train_loss, final_train_acc, \
     final_valid_loss, final_valid_acc, \
     final_test_loss, final_test_acc = training_loop(    model, 
                                                         train_iter, valid_iter, test_iter, 
-                                                        save=False,
+                                                        save_as=save_as,
                                                         **hyperparameters
                                                     )
 
     # summary statistics
     print("Model Summary:")
-    summary(model, input_size=(Personal.n_mfcc, 216))
+    summary(model, input_size=(30, 216))
     print()
     print()
     
     predictions = torch.Tensor()
     labels = torch.Tensor()
 
-    for batch, batch_labels, batch_lengths in test_iter:
-        batch_predictions = model(batch.float())
-        batch_predictions = torch.argmax(batch_predictions, dim=1)
+    train_predictions, train_labels = get_predictions_and_labels(model, train_iter)
+    valid_predictions, valid_labels = get_predictions_and_labels(model, valid_iter)
 
-        predictions = torch.cat( (predictions, batch_predictions.float()), dim=0 )
-        labels = torch.cat( (labels, batch_labels.float()), dim=0 )
-    
-    predictions = predictions.detach().numpy().astype(int)
-    labels = labels.detach().numpy().astype(int)
-    CM = confusion_matrix(labels, predictions) 
-    print("Confusion Matrix :")
-    print(CM)
-    print()
-
-    # plotting confusion matrix nicer
     Metadata = json.load(open(f"{ROOT}/data/Metadata.json", "r"))
+
+    # plotting confusion matrices
+    CM = confusion_matrix(train_labels, train_predictions) 
     named_labels = []
-    for label in labels:
+    for label in train_labels:
         named_label = Metadata["mapping"][str(label)] 
         if named_label not in named_labels:
             named_labels.append(named_label)
-    plot_confusion_matrix(CM, named_labels)
+    plot_confusion_matrix(CM, list(reversed(named_labels)), title="Transfer Learning")
 
+    CM = confusion_matrix(valid_labels, valid_predictions) 
+    named_labels = []
+    for label in valid_labels:
+        named_label = Metadata["mapping"][str(label)] 
+        if named_label not in named_labels:
+            named_labels.append(named_label)
+    plot_confusion_matrix(CM, list(reversed(named_labels)), title="Validation Data")
+
+def no_transfer_learning(model_name, save_as):
+    
+    model = torch.load(model_name)
+
+    train_iter, valid_iter, test_iter = get_personal_iters(batch_size=10)
+    train_predictions, train_labels = get_predictions_and_labels(model, train_iter)
+
+    Metadata = json.load(open(f"{ROOT}/data/Metadata.json", "r"))
+
+    # plotting confusion matrices
+    CM = confusion_matrix(train_labels, train_predictions)
+    print(CM) 
+    print(type(train_labels))
+    print(train_predictions)
+    named_labels = []
+    for label in np.append(train_labels, train_predictions):
+        named_label = Metadata["mapping"][str(label)] 
+        if named_label not in named_labels:
+            named_labels.append(named_label)
+    print(named_labels)
+    plot_confusion_matrix(CM, list(reversed(named_labels)), title="No Transfer Learning")
+
+    if save_as != None:
+        torch.save(model, f"{save_as}.pt")
+        print(f"Model saved as '{save_as}.pt'")
 
 if __name__ == "__main__":
-    transfer_learning()
+    
+    args = get_args()
+    fine_tune(args.model_name, args.save_as)
+    #no_transfer_learning(args.model_name, args.save_as)

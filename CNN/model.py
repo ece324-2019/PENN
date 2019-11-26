@@ -8,12 +8,12 @@ class CNN(nn.Module):
         super(CNN, self).__init__()
         # In n_classes we can group up Calm and Neutral to get 14 instead of 16 labels
         self.conv1 = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=n_kernels, kernel_size=(n_mfcc, 10), stride=2, padding=0),
+            nn.Conv2d(in_channels=1, out_channels=n_kernels, kernel_size=(n_mfcc, 10), stride=1, padding=0),
             nn.ReLU(),
             nn.Dropout(p=0.25)
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=2*n_kernels, kernel_size=(n_mfcc, 40), stride=1, padding=0),
+            nn.Conv2d(in_channels=1, out_channels=2*n_kernels, kernel_size=(n_mfcc, 40), stride=4, padding=0),
             nn.ReLU(),
             nn.Dropout(p=0.25)
         )
@@ -21,9 +21,14 @@ class CNN(nn.Module):
             nn.Linear(3*n_kernels, n_classes)
         )
 
+        # need to access for fine-tuning
+        self.n_kernels = n_kernels
+        self.n_classes = n_classes
+
     # calulates output size
     def _output_size(self, inp_size, kernel_size, stride=1, padding=0, dilation=1):
-
+        
+        # being able to take in either single number, list, or tuple
         kernel_size = kernel_size if type(kernel_size) == tuple or type(kernel_size) == list else (kernel_size, kernel_size)
         stride = stride if type(stride) == tuple or type(stride) == list else (stride, stride)
         padding = padding if type(padding) == tuple or type(padding) == list else (padding, padding)
