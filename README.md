@@ -42,11 +42,11 @@
   |   ├── audio.py
   |   ├── plot.py
   |   └── train.py
-  ├── preprocess.py
   ├── args.py
+  ├── preprocess.py
   ├── pre_train.py
   ├── fine_tune.py
-  └── demo.p
+  └── demo.py
 ```
 
 ## Setting Up Environment
