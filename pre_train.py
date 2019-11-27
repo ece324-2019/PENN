@@ -84,7 +84,8 @@ def pre_train(args):
     else:
         raise ValueError(f"Model '{model_name}' does not exist")
     
-
+    
+    print("Loading Data...")
     train_iter, valid_iter, test_iter = load_data(  args.batch_size, 
                                                     n_mfcc, 
                                                     overfit=args.overfit
