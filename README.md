@@ -24,13 +24,6 @@
   |   └── model.py
   ├── RNN
   |   └── model.py
-  ├── data_handling
-  |   ├── load_data.py
-  |   ├── Preprocessor.py
-  |   ├── RAVDESS_preprocessor.py
-  |   ├── SAVEE_preprocessor.py
-  |   ├── TESS_preprocessor.py
-  |   └── Personal_preprocessor.py
   ├── raw_data
   |   ├── Personal
   |   |   └── .wav files
@@ -38,13 +31,22 @@
   |   ├── SAVEE_metadata.json
   |   ├── TESS_metadata.json
   |   └── Personal_metadata.json
+  ├── data_handling
+  |   ├── load_data.py
+  |   ├── Preprocessor.py
+  |   ├── RAVDESS_preprocessor.py
+  |   ├── SAVEE_preprocessor.py
+  |   ├── TESS_preprocessor.py
+  |   └── Personal_preprocessor.py
+  ├── utils
+  |   ├── audio.py
+  |   ├── plot.py
+  |   └── train.py
   ├── preprocess.py
-  ├── main.py
-  ├── fine_tune.py
-  ├── demo.py
   ├── args.py
-  ├── utils.py
-  └── trained_model.pt
+  ├── pre_train.py
+  ├── fine_tune.py
+  └── demo.p
 ```
 
 ## Setting Up Environment
