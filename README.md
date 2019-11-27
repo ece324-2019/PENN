@@ -39,7 +39,12 @@ $ conda create --name penn python=3.7
 $ source activate penn
 ```
 
-Installing other Python packages required
+Installing other Python packages required using anaconda
+```
+$ conda install --yes --file requirements.txt
+```
+
+Installing other Python packages required using pip
 ```
 $ pip install -r requirements.txt
 ```
@@ -74,23 +79,6 @@ We are using the following emotional speech audio datasets. Download and unzip t
 * [TESS](https://www.kaggle.com/ejlok1/toronto-emotional-speech-set-tess): `TESS Toronto emotional speech set data`
 
 Copy these folders into the `PENN/raw_data` directory
-
-Execute the following:
-```
-$ python preprocess.py
-```
-This will take a very long time as it is processing, MFCC converting, augmenting, and normalizing all the data. The following will be created.
-* `raw_data/RAVDESS` directory with the data from the `ravdess-emotional-speech-audio` reformatted in a more convienent way
-* `raw_data/SAVEE` directory with the data from the `AudioData` reformatted
-* `raw_data/TESS` directory with the data from the `TESS Toronto emotional speech set data` reformatted
-* `data` directory containing `.tsv` files of the different datasets
-You may delete the `ravdess-emotional-speech-audio`, `AudioData`, `TESS Toronto emotional speech set data` folders if you would like.
-
-To use the model modify the `main.py` code as needed and execute
-```
-$ python main.py --model cnn --epoch 30 --save
-```
-This will save the model in as `trained_model.pt`
 
 ### About the RAVDESS Dataset
 
@@ -127,27 +115,65 @@ There are 2 female actresses who say a number of different words. A summary of t
 * Emotion: angry, disgust, fear, happy, ps (pleasent-surprised), sad, neutral
 * Word: back, bar, base, bath, bean, beg, bite, boat, bone, book, bought, burn, cab, calm, came, cause, chain, chair, chalk, chat, check, cheek, chief, choice, cool, dab, date, dead, death, deep, dime, dip, ditch, dodge, dog, doll, door, fail, fall, far, fat, fit, five, food, gap, gas, gaze, germ, get, gin, goal, good, goose, gun, half, hall, hash, hate, have, haze, hire, hit, hole, home, hurl, hush, jail, jar, join, judge, jug, juice, keen, keep, keg, kick, kill, king, kite, knock, late, laud, lean, learn, lease, lid, life, limb, live, loaf, long, lore, lose, lot, love, luck, make, match, merge, mess, met, mill, mob, mode, mood, moon, mop, mouse, nag, name, near, neat, nice, note, numb, pad, page, pain, pass, pearl, peg, perch, phone, pick, pike, pole, pool, puff, rag, raid, rain, raise, rat, reach, read, red, ring, ripe, road, room, rose, rot, rough, rush, said, sail, search, seize, sell, shack, shall, shawl, sheep, shirt, should, shout, size, soap, soup, sour, south, sub, such, sure, take, talk, tape, team, tell, thin, third, thought, thumb, time, tip, tire, ton, tool, tough, turn, vine, voice, void, vote, wag, walk, wash, week, wheat, when, which, whip, white, wife, wire, witch, yearn, yes, young, youth
 
-## Training the Model
+## Using the Model
 
-To train your own model, use the `main.py` file. There are a number of commandline arguments that can be used. Go to the `args.py` to see them for yourself.
+### Summary
+
+```
+$ python preprocess.py
+$ python pre_train.py --model cnn --lr 0.01 --batch_size 100 --epochs 50 --eval_every 10 --save_as pretrained_model
+$ python python fine_tune.py --model_name pretrained_model --save_as finetuned_model
+$ python demo.py --model_name finetuned_model
+```
+
+### Preprocessing
+
+The data is in `.wav` files. We need to convert it to a format that is easier for the neural network to use. This is done using the `preprocess.py` script.
+
+Execute the following:
+```
+$ python preprocess.py
+```
+This will take a very, **very** long time as it is loading, MFCC converting, augmenting, and normalizing all the data. The following will be created.
+* `raw_data/RAVDESS` directory with the data from the `ravdess-emotional-speech-audio` reformatted in a more convienent way
+* `raw_data/SAVEE` directory with the data from the `AudioData` reformatted
+* `raw_data/TESS` directory with the data from the `TESS Toronto emotional speech set data` reformatted
+* `data` directory containing `.tsv` files of the different datasets
+You may delete the `ravdess-emotional-speech-audio`, `AudioData`, `TESS Toronto emotional speech set data` folders if you would like.
+
+### Training
+
+Training the model will consist of 2 parts: pre-training and fine-tuning. The pre-training will use the dataset created by executing `preprocess.py`. The fine-tuning will use our personally recorded dataset. Why do we need to fine-tune the model? If you try to just use the pre-trained model, it will not work when you try to demo. This is because different microphones process audio data a little differently and the neural network will not be able to recognize it. Therefore, fine-tuning was implemented so it can retain what it has learned about classifying audio data, but also work on your computer microphone. The fine-tuning data was recorded on a MacBook pro and will work on any other Mac. If you have another computer then you will need to obtain data recorded on your specific type of laptop in order for the demo to work.  
+
+To pre-train, use `pre_train.py`. There are a number of commandline arguments that can be used. Go to `args.py` to see them for yourself.
 * `--model`: ["mlp", "average", "cnn", "rnn"] --> which architecture is used
 * `--lr`: any positive float --> learning rate of the model
 * `--batch_size`: any positive integer --> batch size of the data
 * `--epochs`: any positive integer --> number of epochs the model will train on
 * `--eval_every`: any positive integer --> how many batches occur until we evaluate the current state of the model
 * `--overfit`: no parameters --> use the overfit data (for debugging purposes)
-* `--save`: no parameters --> save the model after training
+* `--save_as`: any string --> save the model after training with the name as the string inputted
 
 The following are the defaults
 ```
-$ python main.py --model cnn --lr 0.01 --batch_size 100 --epochs 50 --eval_every 10
+$ python pre_train.py --model cnn --lr 0.01 --batch_size 100 --epochs 50 --eval_every 10 --save_as pretrained_model
 ```
 
-## Live Demo
+To fine-tune, use `fine_tune.py`. The following are commandline arguments for this script.
+* `--model_name`: any string --> use the pre-trained model with name equal to the string inputted
+* `--save_as`: any string --> save the model after training with the name as the string inputted
 
-Execute
 ```
-$ python demo.py
+$ python fine_tune.py --model_name pretrained_model --save_as finetuned_model
 ```
 
-It will record a sample from your computer microphone, run that audio through the model, and produce the model's prediction
+### Demo
+
+To demo with your own recording, use `demo.py`. The following commandline argument is used for this script
+* `--model_name`: any string --> use the model with name equal to the string inputted
+
+```
+$ python demo.py --model_name finetuned_model
+```
+
+The script will ask you to record a sample, convert that sample to a `.wav` file, run that audio through the model, and produce the model's prediction.
