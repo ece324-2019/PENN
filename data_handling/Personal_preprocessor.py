@@ -1,4 +1,4 @@
-from .preprocessor import Preprocessor
+from .Preprocessor import Preprocessor
 
 import pandas as pd
 from sklearn.model_selection import train_test_split

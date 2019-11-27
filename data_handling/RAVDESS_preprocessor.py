@@ -1,4 +1,4 @@
-from .preprocessor import Preprocessor
+from .Preprocessor import Preprocessor
 
 import os
 import shutil
