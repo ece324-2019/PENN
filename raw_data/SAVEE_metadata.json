@@ -5,15 +5,6 @@
         "JK",
         "KL"
     ],
-    "_emotion": {
-        "a": "strong",
-        "d": "weak",
-        "f": "weak",
-        "h": "strong",
-        "n": "neutral",
-        "sa": "weak",
-        "su": "strong"
-    },
     "emotion": {
         "a": "angry",
         "d": "disgust",
