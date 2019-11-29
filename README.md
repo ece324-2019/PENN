@@ -160,6 +160,8 @@ This will take a very, **very** long time as it is loading, MFCC converting, aug
 * `data` directory containing `.tsv` files of the different datasets
 You may delete the `ravdess-emotional-speech-audio`, `AudioData`, `TESS Toronto emotional speech set data` folders if you would like.
 
+For more details on exactly how the preprocessor works, see the README in the directory `data_handling`
+
 ### Training
 
 Training the model will consist of 2 parts: pre-training and fine-tuning. The pre-training will use the dataset created by executing `preprocess.py`. The fine-tuning will use our personally recorded dataset. Why do we need to fine-tune the model? If you try to just use the pre-trained model, it will not work when you try to demo. This is because different microphones process audio data a little differently and the neural network will not be able to recognize it. Therefore, fine-tuning was implemented so it can retain what it has learned about classifying audio data, but also work on your computer microphone. The fine-tuning data was recorded on a MacBook pro and will work on any other Mac. If you have another computer then you will need to obtain data recorded on your specific type of laptop in order for the demo to work.  
