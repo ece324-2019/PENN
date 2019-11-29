@@ -9,9 +9,11 @@
   * [About the RAVDESS Dataset](#about-the-ravdess-dataset)
   * [About the SAVEE Dataset](#about-the-savee-dataset)
   * [About the TESS Dataset](#about-the-tess-dataset)
-* [Training the Model](#training-the-model)
-* [Live Demo](#live-demo)
-* [Fine Tuning the Model](#fine-tuning-the-model)
+* [Using the Model](#using-the-model)
+  * [Summary](#summary)
+  * [Preprocessing](#preprocessing)
+  * [Training](#training)
+  * [Demo](#demo)
 
 
 ## Repository Structure
