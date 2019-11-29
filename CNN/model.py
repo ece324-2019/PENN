@@ -4,6 +4,16 @@ import torch
 import torch.nn.functional as F
 
 class CNN(nn.Module):
+   
+    """ A Convolutional Neural Network
+        it has two kernels that operate independently, 
+        the idea being the smaller kernel will pick up on short bursts and the larger kernel will pick up on longer slurs
+        For our particular sample rate, a kernel size of 10 ~ 0.1s and kernel size of 40 ~ 0.4s
+        These independent kernels are then concatinated and run through a dense layer
+
+        Note: we do not need to Softmax at the end because we are using nn.CrossEntropyLoss(), which does that automatically
+    """
+    
     def __init__(self, n_mfcc, n_classes, n_kernels=35):
         super(CNN, self).__init__()
         # In n_classes we can group up Calm and Neutral to get 14 instead of 16 labels

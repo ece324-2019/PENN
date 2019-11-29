@@ -4,8 +4,12 @@ import torch.nn as nn
 import librosa
 
 class MLP(nn.Module):
-    """ If only 1 layer, then this is
-        essentially a logistical regression
+
+    """ This is a general implementation of a Multilayer Precptron 
+        with the exception that it ReLUs every layer except the last layer
+        If there is only one layer, then this is essentially a logistical regression
+
+        Note: we do not need to Softmax at the end because we are using nn.CrossEntropyLoss(), which does that automatically
     """
 
     def __init__(self, input_size, output_size, hidden_layers=[], seed=None):
@@ -38,8 +42,6 @@ class MLP(nn.Module):
                 *Hidden,
                 nn.Linear(hidden_layers[-1], output_size)
             )
-        
-        #print(self.mlp)
     
     def forward(self, x):
         return self.mlp(x.view(x.size(0), -1))
