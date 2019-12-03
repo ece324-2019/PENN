@@ -48,7 +48,11 @@
   ├── preprocess.py
   ├── pre_train.py
   ├── fine_tune.py
-  └── demo.py
+  ├── demo.py
+  ├── pretrained_mlp.pt
+  ├── pretrained_rnn.pt
+  ├── pretrained_cnn.py
+  └── finetune.pt
 ```
 
 ## Setting Up Environment
