@@ -9,9 +9,11 @@
   * [About the RAVDESS Dataset](#about-the-ravdess-dataset)
   * [About the SAVEE Dataset](#about-the-savee-dataset)
   * [About the TESS Dataset](#about-the-tess-dataset)
-* [Training the Model](#training-the-model)
-* [Live Demo](#live-demo)
-* [Fine Tuning the Model](#fine-tuning-the-model)
+* [Using the Model](#using-the-model)
+  * [Summary](#summary)
+  * [Preprocessing](#preprocessing)
+  * [Training](#training)
+  * [Demo](#demo)
 
 
 ## Repository Structure
@@ -157,6 +159,8 @@ This will take a very, **very** long time as it is loading, MFCC converting, aug
 * `raw_data/TESS` directory with the data from the `TESS Toronto emotional speech set data` reformatted
 * `data` directory containing `.tsv` files of the different datasets
 You may delete the `ravdess-emotional-speech-audio`, `AudioData`, `TESS Toronto emotional speech set data` folders if you would like.
+
+For more details on exactly how the preprocessor works, see the README in the directory `data_handling`
 
 ### Training
 
