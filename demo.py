@@ -68,21 +68,26 @@ def get_prediction_from_raw_audio(model_name, file_path):
     model = torch.load(f"{model_name}.pt")
     
     # Get prediction and softmax to turn into probability
-    prediction = Softmax(dim=0)( model(MFCC.float()) )
+    return Softmax(dim=0)( model(MFCC.float()) )
+
+def display_predictions(prediction):
     
-    # Display nicely
+    Metadata = json.load(open(f"{ROOT}/data/Metadata.json", "r"))
+
     print()
     for i, pred in enumerate(prediction):
         print(f"{Metadata['mapping'][str(i)] + ':':20s}{pred:.4f}")
     print()
     p = int(torch.argmax(prediction, dim=0))
     print(f"Prediction: {Metadata['mapping'][str(p)]}")
+    
 
 def demo(model_name, file_path="demo.wav"):
     record(file_path)
-    get_prediction_from_raw_audio(model_name, file_path)
+    prediction = get_prediction_from_raw_audio(model_name, file_path)
+    display_predictions(prediction)
     
 
 if __name__ == "__main__":
     args = get_args()
-    demo(args.model_name)
+    demo(args.model_name[:-3] if args.model_name[-3:] == '.pt' else args.model_name)

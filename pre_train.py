@@ -32,12 +32,16 @@ def pre_train(args):
     n_classes = len(Metadata["mapping"])
 
     model_name = args.model
+    save_as = None
+    if args.save_as != None:
+        save_as = args.save_as[:-3] if args.save_as[-3:] == '.pt' else args.save_as
 
     model = None
     hyperparameters = {}
 
     """ Specification for each model """
-    if model_name.lower() == "mlp":
+    if model_name.lower() == "mlp" or model_name.lower() == "baseline":
+        model_name = "mlp"
         model = MLP(input_size=n_mfcc*audio_length, output_size=n_classes)
         hyperparameters = {
             "optimizer" : torch.optim.Adam,
@@ -95,7 +99,7 @@ def pre_train(args):
     final_valid_loss, final_valid_acc, \
     final_test_loss, final_test_acc = training_loop(    model, 
                                                         train_iter, valid_iter, test_iter, 
-                                                        save_as=args.save_as, 
+                                                        save_as=save_as, 
                                                         **hyperparameters
                                                     )
 

@@ -25,7 +25,7 @@ def get_personal_iters(batch_size):
     Personal = Personal_Preprocessor(seed=100, n_mfcc=30)
     Personal.rearrange()
     df = Personal.get_audio_data()
-    df = Personal.augment(df, frac=1)
+    #df = Personal.augment(df, frac=1)
     df = Personal.mfcc_conversion(df)
     train_data, train_label, valid_data, valid_label = Personal.split(df)
 
@@ -48,8 +48,12 @@ def get_personal_iters(batch_size):
 
 def fine_tune(model_name, save_as=None):
 
-    model = torch.load(f"{model_name}.pt")                    # loads model with all parameters frozen
-    model.fc = nn.Linear(3*model.n_kernels, model.n_classes)    # re-initialize last linear layer
+    # TODO: implemented fine-tuning for each model
+    try:
+        model = torch.load(f"{model_name}.pt")                    # loads model with all parameters frozen
+        model.fc = nn.Linear(3*model.n_kernels, model.n_classes)    # re-initialize last linear layer
+    except:
+        raise TypeError("The loaded model needs to be a CNN")
 
     hyperparameters = {
                     "optimizer" : torch.optim.Adam,
@@ -130,5 +134,11 @@ def no_transfer_learning(model_name, save_as):
 if __name__ == "__main__":
     
     args = get_args()
-    fine_tune(args.model_name, args.save_as)
-    #no_transfer_learning(args.model_name, args.save_as)
+    
+    model_name, save_as = None, None
+    if args.model_name != None:
+        model_name = args.model_name[:-3] if args.model_name[-3:] == '.pt' else args.model_name
+    if args.save_as != None:
+        save_as = args.save_as[:-3] if args.save_as[-3:] == '.pt' else args.save_as
+    fine_tune(model_name, save_as)
+    #no_transfer_learning(model_name, save_as)
