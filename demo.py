@@ -15,6 +15,7 @@ import numpy as np
 # Manipulate files
 import os
 import json
+from args import get_args
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -48,9 +49,8 @@ def record(output_file_name, length=2.5, sample_rate=44100, channels=2, audio_fo
     waveFile.writeframes(b''.join(frames))
     waveFile.close()
 
-def demo(model_name):
-    record("demo.wav")
-    MFCC, n_mfcc, audio_length = mfcc_conversion("demo.wav")
+def get_prediction_from_raw_audio(model_name, file_path):
+    MFCC, n_mfcc, audio_length = mfcc_conversion(file_path)
 
     # Metadata file
     Metadata = json.load(open(f"{ROOT}/data/Metadata.json", "r"))
@@ -65,7 +65,7 @@ def demo(model_name):
     MFCC = torch.from_numpy(MFCC).reshape(1, n_mfcc, audio_length)
 
     # load model
-    model = torch.load(model_name)
+    model = torch.load(f"{model_name}.pt")
     
     # Get prediction and softmax to turn into probability
     prediction = Softmax(dim=0)( model(MFCC.float()) )
@@ -77,6 +77,11 @@ def demo(model_name):
     print()
     p = int(torch.argmax(prediction, dim=0))
     print(f"Prediction: {Metadata['mapping'][str(p)]}")
+
+def demo(model_name, file_path="demo.wav"):
+    record(file_path)
+    get_prediction_from_raw_audio(model_name, file_path)
+    
 
 if __name__ == "__main__":
     args = get_args()

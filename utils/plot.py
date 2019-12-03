@@ -1,6 +1,7 @@
 import librosa
 import librosa.display
 import seaborn as sns
+from pydub import AudioSegment
 
 import pandas as pd
 import numpy as np
@@ -80,6 +81,7 @@ def plot_confusion_matrix(confusion_matrix, class_names, title=None, figsize=(10
 
     plt.show()
 
+
 def plot_waveform(audio_file_path):
     
     data_array, _ = librosa.load(audio_file_path, res_type='kaiser_fast', sr=44100, duration=2.5)
@@ -104,3 +106,12 @@ def plot_MFCC(audio_file_path):
     plt.title("MFCC")
     plt.tight_layout()
     plt.show()
+
+if __name__ == "__main__":
+    audio_file_path = "./raw_data/RAVDESS/03-01-06-01-01-01-15.wav"
+    #print(get_silence(audio_file_path, threshold=0))
+    #plot_waveform(audio_file_path)
+    #plot_MFCC(audio_file_path)
+    #audio = AudioSegment.from_wav(audio_file_path)
+    #print(len(audio) / 1000)
+    #wav_to_mp3(l[1])

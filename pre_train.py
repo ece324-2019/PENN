@@ -55,7 +55,7 @@ def pre_train(args):
             "loss_fnc" : nn.CrossEntropyLoss(),
             "epochs" : args.epochs,
             "batch_size" : args.batch_size,
-            "lr" : 0.1 if args.lr == -1 else args.lr,
+            "lr" : 0.001 if args.lr == -1 else args.lr,
             "eval_every" : 10 if args.eval_every == -1 else args.eval_every
         }
         print("Created Averaging CNN baseline model")
@@ -67,7 +67,7 @@ def pre_train(args):
             "epochs" : args.epochs,
             "batch_size" : args.batch_size,
             "lr" : 0.001 if args.lr == -1 else args.lr,
-            "eval_every" : 10 if args.eval_every == -1 else args.eval_every
+            "eval_every" : 50 if args.eval_every == -1 else args.eval_every
         }
         print("Created CNN model")
     elif model_name.lower() == "rnn":
@@ -78,7 +78,7 @@ def pre_train(args):
             "epochs" : args.epochs,
             "batch_size" : args.batch_size,
             "lr" : 0.01 if args.lr == -1 else args.lr,
-            "eval_every" : 10 if args.eval_every == -1 else args.eval_every
+            "eval_every" : 50 if args.eval_every == -1 else args.eval_every
         }
         print("Created RNN model")
     else:

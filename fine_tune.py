@@ -25,6 +25,7 @@ def get_personal_iters(batch_size):
     Personal = Personal_Preprocessor(seed=100, n_mfcc=30)
     Personal.rearrange()
     df = Personal.get_audio_data()
+    df = Personal.augment(df, frac=1)
     df = Personal.mfcc_conversion(df)
     train_data, train_label, valid_data, valid_label = Personal.split(df)
 

@@ -138,7 +138,7 @@ There are 2 female actresses who say a number of different words. A summary of t
 
 ```
 $ python preprocess.py
-$ python pre_train.py --model cnn --lr 0.01 --batch_size 100 --epochs 50 --eval_every 10 --save_as pretrained_model
+$ python pre_train.py --model cnn --lr 0.01 --batch-size 100 --epochs 50 --eval-every 10 --save-as pretrained_model
 $ python python fine_tune.py --model_name pretrained_model --save_as finetuned_model
 $ python demo.py --model_name finetuned_model
 ```
@@ -165,32 +165,32 @@ Training the model will consist of 2 parts: pre-training and fine-tuning. The pr
 To pre-train, use `pre_train.py`. There are a number of commandline arguments that can be used. Go to `args.py` to see them for yourself.
 * `--model`: ["mlp", "average", "cnn", "rnn"] --> which architecture is used
 * `--lr`: any positive float --> learning rate of the model
-* `--batch_size`: any positive integer --> batch size of the data
+* `--batch-size`: any positive integer --> batch size of the data
 * `--epochs`: any positive integer --> number of epochs the model will train on
-* `--eval_every`: any positive integer --> how many batches occur until we evaluate the current state of the model
+* `--eval-every`: any positive integer --> how many batches occur until we evaluate the current state of the model
 * `--overfit`: no parameters --> use the overfit data (for debugging purposes)
-* `--save_as`: any string --> save the model after training with the name as the string inputted
+* `--save-as`: any string --> save the model after training with the name as the string inputted
 
 The following are the defaults
 ```
-$ python pre_train.py --model cnn --lr 0.01 --batch_size 100 --epochs 50 --eval_every 10 --save_as pretrained_model
+$ python pre_train.py --model cnn --lr 0.01 --batch-size 100 --epochs 50 --eval-every 10 --save-as pretrained_model
 ```
 
 To fine-tune, use `fine_tune.py`. The following are commandline arguments for this script.
-* `--model_name`: any string --> use the pre-trained model with name equal to the string inputted
-* `--save_as`: any string --> save the model after training with the name as the string inputted
+* `--model-name`: any string --> use the pre-trained model with name equal to the string inputted
+* `--save-as`: any string --> save the model after training with the name as the string inputted
 
 ```
-$ python fine_tune.py --model_name pretrained_model --save_as finetuned_model
+$ python fine_tune.py --model-name pretrained_model --save-as finetuned_model
 ```
 
 ### Demo
 
 To demo with your own recording, use `demo.py`. The following commandline argument is used for this script
-* `--model_name`: any string --> use the model with name equal to the string inputted
+* `--model-name`: any string --> use the model with name equal to the string inputted
 
 ```
-$ python demo.py --model_name finetuned_model
+$ python demo.py --model-name finetuned_model
 ```
 
 The script will ask you to record a sample, convert that sample to a `.wav` file, run that audio through the model, and produce the model's prediction.
