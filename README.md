@@ -1,7 +1,7 @@
 # PENN
 **P**rediction **E**motions using a **N**eural **N**etwork
 
-The goal of PENN is to be able to take in an audio file of a person speaking and accurately predicting their emotion. PENN can predict the emotions angry, disgust, fear, happy, neutral, sad, and surprised across both males and females with a top 2 accuracy of 95%. This repository was developed by Gabe Deza and Eric Keilty as part of the ECE324 final project at the University of Toronto.
+The goal of PENN is to be able to take in an audio file of a person speaking and accurately predicting their emotion. PENN can predict the emotions angry, disgust, fear, happy, neutral, sad, and surprised across both males and females with a top 2 accuracy of 95%. This repository was developed by Gabriel Deza and Eric Keilty as part of the ECE324 final project at the University of Toronto.
 
 ## Table of Contents
 * [Repository Structure](#repository-structure)
@@ -147,8 +147,8 @@ There are 2 female actresses who say a number of different words. A summary of t
 ```
 $ python preprocess.py
 $ python pre_train.py --model cnn --lr 0.01 --batch-size 100 --epochs 50 --eval-every 10 --save-as pretrained_model
-$ python python fine_tune.py --model_name pretrained_model --save_as finetuned_model
-$ python demo.py --model_name finetuned_model
+$ python python fine_tune.py --model-name pretrained_model --save-as finetuned_model
+$ python demo.py --model-name finetuned_model
 ```
 
 ### Preprocessing
