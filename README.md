@@ -3,6 +3,9 @@
 
 The goal of PENN is to be able to take in an audio file of a person speaking and accurately predicting their emotion. PENN can predict the emotions angry, disgust, fear, happy, neutral, sad, and surprised across both males and females with a top 2 accuracy of 95%. This repository was developed by Gabriel Deza and Eric Keilty as part of the ECE324 final project at the University of Toronto.
 
+Link to [video presentation](https://www.youtube.com/watch?v=FgxWvIUK_i8&feature=emb_logo) <br>
+Link to [report](https://www.eecg.utoronto.ca/~jayar/ece324/2019/penn.pdf)
+
 ## Table of Contents
 * [Repository Structure](#repository-structure)
 * [Setting Up Environment](#setting-up-environment)
